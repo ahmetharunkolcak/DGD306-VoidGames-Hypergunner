@@ -1,0 +1,13 @@
+# IDE Files & Folders
+.vs/
+.idea/
+
+# Unreal Engine Files & Folders
+
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+
+*.sln
+.vsconfig
