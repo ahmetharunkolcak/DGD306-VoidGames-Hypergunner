@@ -11,7 +11,7 @@ void AMainGameMode::BeginPlay() {
 		UGameplayStatics::GetAllActorsOfClass(CurrentWorld, APlayerStart::StaticClass(), PlayerStarts);
 		for (int32 CurrentIndex = 0; CurrentIndex < PlayerStarts.Num(); ++CurrentIndex) {
 			const AActor* CurrentPlayerStart = PlayerStarts[CurrentIndex];
-			FTransform CurrentPlayerStartTransform = CurrentPlayerStart -> GetTransform();
+			const FTransform CurrentPlayerStartTransform = CurrentPlayerStart -> GetTransform();
 			
 			TSubclassOf<APlayerCharacter> SpawningActorClass = nullptr;
 			if (this -> PlayerCharacters.IsValidIndex(CurrentIndex)) {
