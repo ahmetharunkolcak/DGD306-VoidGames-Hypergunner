@@ -44,7 +44,7 @@ void AMainGameMode::BeginPlay() {
 				} else {
 					UE_LOG(LogTemp,
 					       Warning,
-					       TEXT("AMainGameMode::BeginPlay - Failed to create local player: %s"), *OutErrorMessage);
+					       TEXT("AMainGameMode::BeginPlay: Failed to create local player: %s"), *OutErrorMessage);
 				}
 			}
 		}

@@ -15,7 +15,13 @@ void APlayerCharacter::PossessedBy(AController* NewController) {
 	if (const APlayerController* PlayerController = Cast<APlayerController>(NewController)) {
 		if (const ULocalPlayer* LocalPlayer = PlayerController -> GetLocalPlayer()) {
 			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LocalPlayer)) {
-				Subsystem -> AddMappingContext(this->InputMappingContext, 0);
+				if (this -> InputMappingContext != nullptr) {
+					Subsystem -> AddMappingContext(this -> InputMappingContext, 0);
+				} else {
+					UE_LOG(LogTemp,
+					       Warning,
+					       TEXT("APlayerCharacter::PossessedBy: InputMappingContext is nullptr!"));
+				}
 			}
 		}
 	}
@@ -31,37 +37,12 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-		EnhancedInputComponent -> BindAction(this -> MoveAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
-	}
-}
-
-#if WITH_EDITOR
-
-void APlayerCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) {
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-
-	const FName ChangedPropertyName = PropertyChangedEvent.Property
-		                                  ? PropertyChangedEvent.Property->GetFName()
-		                                  : NAME_None;
-	if (ChangedPropertyName == GET_MEMBER_NAME_CHECKED(APlayerCharacter, InputMappingContext)) {
-		this -> bCanEditInputActions = (this -> InputMappingContext != nullptr);
-		if (!this -> bCanEditInputActions) {
-			if (const UClass* Class = GetClass()) {
-				for (TFieldIterator<FProperty> PropertyIterator(Class); PropertyIterator; ++PropertyIterator) {
-					const FProperty* Property = *PropertyIterator;
-					if (const FObjectProperty* ObjectProperty = CastField<FObjectProperty>(Property)) {
-						if (const FString Category = Property -> GetMetaData(TEXT("Category"));
-							Category == TEXT("Custom|Input|Actions")) {
-							if (ObjectProperty -> PropertyClass -> IsChildOf(UInputAction::StaticClass())) {
-								void* PropertyAddress = Property -> ContainerPtrToValuePtr<void>(this);
-								ObjectProperty -> SetObjectPropertyValue(PropertyAddress, nullptr);
-							}
-						}
-					}
-				}
-			}
+		if (this -> MoveAction != nullptr) {
+			EnhancedInputComponent -> BindAction(this -> MoveAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
+		} else {
+			UE_LOG(LogTemp,
+			       Warning,
+			       TEXT("APlayerCharacter::SetupInputComponent: MoveAction is nullptr!"));
 		}
 	}
 }
-
-#endif

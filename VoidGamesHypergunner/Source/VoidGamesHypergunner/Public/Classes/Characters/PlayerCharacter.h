@@ -30,17 +30,6 @@ class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter {
 		UPROPERTY(EditAnywhere, Category = "Custom|Input")
 		UInputMappingContext* InputMappingContext = nullptr;
 
-		UPROPERTY(EditAnywhere, Category = "Custom|Input|Actions", meta = (EditCondition = "bCanEditInputActions", EditConditionHides))
+		UPROPERTY(EditAnywhere, Category = "Custom|Input|Actions")
 		UInputAction* MoveAction = nullptr;
-
-	private:
-	#if WITH_EDITOR
-		virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-	#endif
-
-	private:
-	#if WITH_EDITORONLY_DATA
-		UPROPERTY()
-		bool bCanEditInputActions = false;
-	#endif
 };
