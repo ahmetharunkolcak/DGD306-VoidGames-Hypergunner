@@ -3,7 +3,7 @@
 #include "GameFramework/PlayerController.h"
 
 ASideViewCameraActor::ASideViewCameraActor() {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 }
 
 void ASideViewCameraActor::BeginPlay() {
