@@ -7,6 +7,8 @@
 
 #include "PlayerCharacter.generated.h"
 
+class AController;
+class UInputComponent;
 class UInputMappingContext;
 class UInputAction;
 
