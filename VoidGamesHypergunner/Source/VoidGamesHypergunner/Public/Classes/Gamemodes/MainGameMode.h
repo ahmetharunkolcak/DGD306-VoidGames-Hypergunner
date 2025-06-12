@@ -15,6 +15,6 @@ class VOIDGAMESHYPERGUNNER_API AMainGameMode : public AGameModeBase {
 		virtual void BeginPlay() override;
 
 	protected:
-		UPROPERTY(EditAnywhere, Category = "Custom|Player Selection")
+		UPROPERTY(EditAnywhere, Category = "Custom|PlayerSelection")
 		TArray<TSubclassOf<APlayerCharacter>> PlayerCharacters = {};
 };

@@ -29,8 +29,20 @@ void APlayerCharacter::PossessedBy(AController* NewController) {
 
 void APlayerCharacter::Move(const FInputActionValue& Value) {
 	const float MovementScaleValue = Value.Get<float>();
-	const FVector MovementDirection = FVector::ForwardVector;
-	AddMovementInput(MovementDirection, MovementScaleValue);
+	if (FMath::IsNearlyZero(MovementScaleValue)) {
+		return;
+	}
+
+	const FVector ActorForwardDirection = GetActorForwardVector();
+	const float FacingDirection = ActorForwardDirection.X >= 0 ? 1.0f : -1.0f;
+	float FacedForwardInput = MovementScaleValue * FacingDirection;
+
+	if (const FVector MovementDirection = ActorForwardDirection * FacedForwardInput;
+		FVector::DotProduct(MovementDirection, ActorForwardDirection) < 0.0f) {
+		FacedForwardInput *= this -> BackwardsMovementSpeedMultiplier;
+	}
+
+	AddMovementInput(ActorForwardDirection, FacedForwardInput);
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) {
