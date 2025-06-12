@@ -34,5 +34,5 @@ class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter {
 		UInputAction* MoveAction = nullptr;
 
 		UPROPERTY(EditAnywhere, Category = "Custom|Movement|BackwardsSpeedMultiplier")
-		float BackwardsMovementSpeedMultiplier = 0.5f;
+		float BackwardsMovementSpeedMultiplier = 0.6f;
 };
