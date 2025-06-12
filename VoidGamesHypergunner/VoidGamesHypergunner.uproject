@@ -17,10 +17,6 @@
 			"TargetAllowList": [
 				"Editor"
 			]
-		},
-		{
-			"Name": "RawInput",
-			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [
