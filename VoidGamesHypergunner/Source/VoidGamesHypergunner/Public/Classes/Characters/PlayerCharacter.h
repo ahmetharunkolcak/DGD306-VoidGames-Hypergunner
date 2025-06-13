@@ -11,6 +11,7 @@ class AController;
 class UInputComponent;
 class UInputMappingContext;
 class UInputAction;
+class UHealthComponent;
 
 UCLASS()
 class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter {
@@ -20,6 +21,7 @@ class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter {
 		APlayerCharacter();
 
 	protected:
+		virtual void BeginPlay() override;
 		virtual void PossessedBy(AController* NewController) override;
 
 		void Move(const FInputActionValue& Value);
@@ -35,4 +37,10 @@ class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter {
 
 		UPROPERTY(EditAnywhere, Category = "Custom|Movement|BackwardsSpeedMultiplier")
 		float BackwardsMovementSpeedMultiplier = 0.6f;
+
+		UPROPERTY();
+		UHealthComponent* HealthComponent = nullptr;
+
+		UPROPERTY(EditAnywhere, Category = "Custom|Health")
+		float MaximumHealth = 100.0f;
 };

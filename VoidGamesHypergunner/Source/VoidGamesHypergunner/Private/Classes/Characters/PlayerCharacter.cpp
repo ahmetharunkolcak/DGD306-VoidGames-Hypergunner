@@ -5,8 +5,24 @@
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 
+#include "Classes/ActorComponents/HealthComponent.h"
+
 APlayerCharacter::APlayerCharacter() {
 	PrimaryActorTick.bCanEverTick = false;
+
+	this -> HealthComponent = CreateDefaultSubobject<UHealthComponent>(FName("Health Component"));
+}
+
+void APlayerCharacter::BeginPlay() {
+	Super::BeginPlay();
+
+	if (this -> HealthComponent != nullptr) {
+		this -> HealthComponent -> Initialize(this -> MaximumHealth);
+	} else {
+		UE_LOG(LogTemp,
+		       Warning,
+		       TEXT("APlayerCharacter::BeginPlay: HealthComponent is nullptr!"));
+	}
 }
 
 void APlayerCharacter::PossessedBy(AController* NewController) {
