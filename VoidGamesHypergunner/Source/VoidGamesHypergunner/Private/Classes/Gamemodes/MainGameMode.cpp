@@ -8,9 +8,15 @@ void AMainGameMode::BeginPlay() {
 
 	if (UWorld* CurrentWorld = GetWorld()) {
 		TArray<AActor*> PlayerStarts;
-		UGameplayStatics::GetAllActorsOfClass(CurrentWorld, APlayerStart::StaticClass(), PlayerStarts);
+		if (this -> PlayerSpawnPointClass == nullptr) {
+			UE_LOG(LogTemp,
+			       Warning,
+			       TEXT("AMainGameMode::BeginPlay: PlayerSpawnPointClass is nullptr!"));
+			return;
+		}
+		UGameplayStatics::GetAllActorsOfClass(CurrentWorld, this -> PlayerSpawnPointClass, PlayerStarts);
 		for (int32 CurrentIndex = 0; CurrentIndex < PlayerStarts.Num(); ++CurrentIndex) {
-			const AActor* CurrentPlayerStart = PlayerStarts[CurrentIndex];
+			AActor* CurrentPlayerStart = PlayerStarts[CurrentIndex];
 			const FTransform CurrentPlayerStartTransform = CurrentPlayerStart -> GetTransform();
 			
 			TSubclassOf<APlayerCharacter> SpawningActorClass = nullptr;
@@ -46,6 +52,10 @@ void AMainGameMode::BeginPlay() {
 					       Warning,
 					       TEXT("AMainGameMode::BeginPlay: Failed to create local player: %s"), *OutErrorMessage);
 				}
+			}
+
+			if (CurrentPlayerStart != nullptr && !CurrentPlayerStart -> IsPendingKillPending()) {
+				CurrentPlayerStart -> Destroy();
 			}
 		}
 	}

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "GameFramework/Actor.h"
 
 #include "Classes/Characters/PlayerCharacter.h"
 
@@ -17,4 +18,7 @@ class VOIDGAMESHYPERGUNNER_API AMainGameMode : public AGameModeBase {
 	protected:
 		UPROPERTY(EditAnywhere, Category = "Custom|PlayerSelection")
 		TArray<TSubclassOf<APlayerCharacter>> PlayerCharacters = {};
+
+		UPROPERTY(EditAnywhere, Category= "Custom|PlayerSpawn")
+		TSubclassOf<AActor> PlayerSpawnPointClass = nullptr;
 };
