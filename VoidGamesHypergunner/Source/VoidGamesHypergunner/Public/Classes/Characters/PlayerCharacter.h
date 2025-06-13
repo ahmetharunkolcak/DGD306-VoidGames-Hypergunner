@@ -4,6 +4,7 @@
 #include "GameFramework/Character.h"
 
 #include "InputActionValue.h"
+#include "Structs/InputBindingData.h"
 
 #include "PlayerCharacter.generated.h"
 
@@ -24,6 +25,7 @@ class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter {
 		virtual void BeginPlay() override;
 		virtual void PossessedBy(AController* NewController) override;
 
+		UFUNCTION()
 		void Move(const FInputActionValue& Value);
 
 		virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
@@ -32,8 +34,8 @@ class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter {
 		UPROPERTY(EditAnywhere, Category = "Custom|Input")
 		UInputMappingContext* InputMappingContext = nullptr;
 
-		UPROPERTY(EditAnywhere, Category = "Custom|Input|Actions")
-		UInputAction* MoveAction = nullptr;
+		UPROPERTY(EditAnywhere, Category = "Custom|Input")
+		TArray<FInputBindingData> InputBindingDatas;
 
 		UPROPERTY(EditAnywhere, Category = "Custom|Movement|BackwardsSpeedMultiplier")
 		float BackwardsMovementSpeedMultiplier = 0.6f;

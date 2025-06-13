@@ -65,12 +65,53 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-		if (this -> MoveAction != nullptr) {
-			EnhancedInputComponent -> BindAction(this -> MoveAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
-		} else {
-			UE_LOG(LogTemp,
-			       Warning,
-			       TEXT("APlayerCharacter::SetupInputComponent: MoveAction is nullptr!"));
+		for (int32 CurrentIndex = 0; CurrentIndex < this -> InputBindingDatas.Num(); ++CurrentIndex) {
+			const auto& [ActionName, Action, TriggerEvents, FunctionName] = this -> InputBindingDatas[CurrentIndex];
+			bool bIsFailed = false;
+
+			if (ActionName.IsNone() || ActionName.IsEqual("")) {
+				UE_LOG(LogTemp,
+				       Warning,
+				       TEXT("APlayerCharacter::SetupInputComponent: ActionName is empty!"));
+				bIsFailed = true;
+			}
+
+			if (Action == nullptr) {
+				UE_LOG(LogTemp,
+				       Warning,
+				       TEXT("APlayerCharacter::SetupInputComponent: Action of %s is nullptr."),
+				       *ActionName.ToString());
+				bIsFailed = true;
+			}
+
+			if (TriggerEvents.Num() == 0) {
+				UE_LOG(LogTemp,
+				       Warning,
+				       TEXT("APlayerCharacter::SetupInputComponent: TriggerEvent of %s is empty!"),
+				       *ActionName.ToString());
+				bIsFailed = true;
+			}
+
+			if (FunctionName.IsNone() || this -> FindFunction(FunctionName) == nullptr) {
+				UE_LOG(LogTemp,
+					   Warning,
+					   TEXT("APlayerCharacter::SetupInputComponent: Function %s of %s is not found!"),
+					   *FunctionName.ToString(),
+					   *ActionName.ToString());
+				bIsFailed = true;
+			}
+
+			if (bIsFailed) {
+				UE_LOG(LogTemp,
+					Warning,
+					TEXT("Skipping input action at index %d!"),
+					CurrentIndex)
+				continue;
+			}
+
+			for (const ETriggerEvent& TriggerEvent : TriggerEvents) {
+				EnhancedInputComponent -> BindAction(Action, TriggerEvent, this, FunctionName);
+			}
 		}
 	}
 }
