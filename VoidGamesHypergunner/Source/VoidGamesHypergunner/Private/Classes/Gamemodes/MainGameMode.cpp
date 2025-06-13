@@ -33,7 +33,19 @@ void AMainGameMode::BeginPlay() {
 				continue;
 			}
 
-			if (CurrentIndex == 0) {
+			FProperty* IndexProperty = nullptr;
+			if (IndexProperty = CurrentPlayerStart -> GetClass() -> FindPropertyByName(FName("Index"));
+				IndexProperty == nullptr) {
+				UE_LOG(LogTemp,
+					Warning,
+					TEXT("Could not find Index to spawn at the actor found at index %d"),
+					CurrentIndex);
+
+				continue;
+			}
+
+			if (const FIntProperty* IntIndexProperty = CastField<FIntProperty>(IndexProperty);
+				IntIndexProperty -> GetPropertyValue_InContainer(CurrentPlayerStart) == 0) {
 				AActor* SpawnedPlayerActor = CurrentWorld -> SpawnActor(SpawningActorClass, &CurrentPlayerStartTransform);
 				APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 				APawn* PlayerPawn = Cast<APawn>(SpawnedPlayerActor);

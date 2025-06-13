@@ -16,7 +16,10 @@ class VOIDGAMESHYPERGUNNER_API UHealthComponent : public UActorComponent {
 		virtual void Initialize(const float Health);
 		virtual void UpdateHealth(const float Amount, const bool bIsCurrentHealth, const bool bIsPositive);
 
+		UFUNCTION(BlueprintCallable)
 		FORCEINLINE float GetCurrentHealth() const { return this -> CurrentHealth; }
+
+		UFUNCTION(BlueprintCallable)
 		FORCEINLINE float GetMaximumHealth() const { return this -> MaximumHealth; }
 
 	protected:

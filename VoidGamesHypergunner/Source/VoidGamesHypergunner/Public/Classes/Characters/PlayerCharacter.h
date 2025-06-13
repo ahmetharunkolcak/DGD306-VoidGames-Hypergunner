@@ -40,7 +40,7 @@ class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter {
 		UPROPERTY(EditAnywhere, Category = "Custom|Movement|BackwardsSpeedMultiplier")
 		float BackwardsMovementSpeedMultiplier = 0.6f;
 
-		UPROPERTY();
+		UPROPERTY(BlueprintReadOnly);
 		UHealthComponent* HealthComponent = nullptr;
 
 		UPROPERTY(EditAnywhere, Category = "Custom|Health")
