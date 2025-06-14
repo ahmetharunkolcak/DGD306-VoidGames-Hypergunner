@@ -1,5 +1,6 @@
 ﻿#include "Classes/UserWidgets/InGameWidget.h"
 
+#include "Components/Image.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Interfaces/HealthComponentContainable.h"
@@ -9,6 +10,30 @@ void UInGameWidget::SetTimer(const float Time) const {
 		const FText FormattedTime = this -> GetFormattedTime(Time);
 		this -> TimeValue -> SetText(FormattedTime);
 	}
+}
+
+void UInGameWidget::SetLeftImage(UTexture2D* Image) {
+	if (Image == nullptr) {
+		UE_LOG(LogTemp,
+			Warning,
+			TEXT("UInGameWidget::SetLeftImage: Image is nullptr!"));
+
+		return;
+	}
+
+	this -> ImageL -> SetBrushFromTexture(Image);
+}
+
+void UInGameWidget::SetRightImage(UTexture2D* Image) {
+	if (Image == nullptr) {
+		UE_LOG(LogTemp,
+			Warning,
+			TEXT("UInGameWidget::SetRightImage: Image is nullptr!"));
+
+		return;
+	}
+
+	this -> ImageR -> SetBrushFromTexture(Image);
 }
 
 void UInGameWidget::UpdateHealthFor(const AActor* Player, const bool bIsLeftPlayer) {
