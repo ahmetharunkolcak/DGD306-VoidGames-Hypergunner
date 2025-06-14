@@ -13,6 +13,14 @@ APlayerCharacter::APlayerCharacter() {
 	this -> HealthComponent = CreateDefaultSubobject<UHealthComponent>(FName("Health Component"));
 }
 
+float APlayerCharacter::GetCharacterHealthRate() const {
+	const float CurHealth = this -> HealthComponent -> GetCurrentHealth();
+	const float MaxHealth = this -> HealthComponent -> GetMaximumHealth();
+	const float HealthRate = CurHealth / MaxHealth;
+	const float ClampedHealthRate = FMath::Clamp(HealthRate, 0.0f, 1.0f);
+	return ClampedHealthRate;
+}
+
 void APlayerCharacter::BeginPlay() {
 	Super::BeginPlay();
 

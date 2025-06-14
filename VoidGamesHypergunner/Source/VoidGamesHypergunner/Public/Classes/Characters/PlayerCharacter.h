@@ -6,6 +6,8 @@
 #include "InputActionValue.h"
 #include "Structs/InputBindingData.h"
 
+#include "Interfaces/HealthComponentContainable.h"
+
 #include "PlayerCharacter.generated.h"
 
 class AController;
@@ -15,11 +17,13 @@ class UInputAction;
 class UHealthComponent;
 
 UCLASS()
-class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter {
+class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter, public IHealthComponentContainable {
 	GENERATED_BODY()
 
 	public:
 		APlayerCharacter();
+
+		virtual float GetCharacterHealthRate() const override;
 
 	protected:
 		virtual void BeginPlay() override;

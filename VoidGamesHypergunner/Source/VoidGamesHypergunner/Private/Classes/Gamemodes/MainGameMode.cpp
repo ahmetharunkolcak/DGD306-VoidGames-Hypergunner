@@ -1,22 +1,29 @@
 ﻿#include "VoidGamesHypergunner/Public/Classes/Gamemodes/MainGameMode.h"
 
-#include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
+
+#include "Classes/Actors/SpawnPoint.h"
+
+AMainGameMode::AMainGameMode() {
+	PrimaryActorTick.bCanEverTick = true;
+}
 
 void AMainGameMode::BeginPlay() {
 	Super::BeginPlay();
 
 	if (UWorld* CurrentWorld = GetWorld()) {
 		TArray<AActor*> PlayerStarts;
-		if (this -> PlayerSpawnPointClass == nullptr) {
-			UE_LOG(LogTemp,
-			       Warning,
-			       TEXT("AMainGameMode::BeginPlay: PlayerSpawnPointClass is nullptr!"));
-			return;
-		}
-		UGameplayStatics::GetAllActorsOfClass(CurrentWorld, this -> PlayerSpawnPointClass, PlayerStarts);
+		UGameplayStatics::GetAllActorsOfClass(CurrentWorld, ASpawnPoint::StaticClass(), PlayerStarts);
 		for (int32 CurrentIndex = 0; CurrentIndex < PlayerStarts.Num(); ++CurrentIndex) {
 			AActor* CurrentPlayerStart = PlayerStarts[CurrentIndex];
+			if (!CurrentPlayerStart -> Implements<USpawnable>()) {
+				UE_LOG(LogTemp,
+				       Warning,
+				       TEXT("AMainGameMode::BeginPlay: Could not verified Spawnable interface existence on spawn point actor with index %d"),
+				       CurrentIndex);
+				continue;
+			}
+
 			const FTransform CurrentPlayerStartTransform = CurrentPlayerStart -> GetTransform();
 			
 			TSubclassOf<APlayerCharacter> SpawningActorClass = nullptr;
@@ -33,19 +40,16 @@ void AMainGameMode::BeginPlay() {
 				continue;
 			}
 
-			FProperty* IndexProperty = nullptr;
-			if (IndexProperty = CurrentPlayerStart -> GetClass() -> FindPropertyByName(FName("Index"));
-				IndexProperty == nullptr) {
+			const ISpawnable* SpawnableInterface = Cast<ISpawnable>(CurrentPlayerStart);
+			const int32 SpawnIndex = SpawnableInterface -> GetSpawnIndex();
+			if (this -> SpawnedIndexes.Contains(SpawnIndex)) {
 				UE_LOG(LogTemp,
 					Warning,
-					TEXT("Could not find Index to spawn at the actor found at index %d"),
-					CurrentIndex);
-
+					TEXT("AMainGameMode::BeginPlay: Already spawned a player with index %d"),
+					SpawnIndex);
 				continue;
 			}
-
-			if (const FIntProperty* IntIndexProperty = CastField<FIntProperty>(IndexProperty);
-				IntIndexProperty -> GetPropertyValue_InContainer(CurrentPlayerStart) == 0) {
+			if (SpawnIndex == 0) {
 				AActor* SpawnedPlayerActor = CurrentWorld -> SpawnActor(SpawningActorClass, &CurrentPlayerStartTransform);
 				APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 				APawn* PlayerPawn = Cast<APawn>(SpawnedPlayerActor);
@@ -68,7 +72,20 @@ void AMainGameMode::BeginPlay() {
 
 			if (CurrentPlayerStart != nullptr && !CurrentPlayerStart -> IsPendingKillPending()) {
 				CurrentPlayerStart -> Destroy();
+				this -> SpawnedIndexes.Add(SpawnIndex);
 			}
 		}
 	}
+
+	this -> CurrentTime = this -> GameTime;
+}
+
+void AMainGameMode::Tick(const float DeltaSeconds) {
+	Super::Tick(DeltaSeconds);
+
+	this -> CurrentTime -= DeltaSeconds;
+}
+
+float AMainGameMode::GetGameplayTime(const bool bIsCurrentTime) const {
+	return bIsCurrentTime ? this -> CurrentTime : this -> GameTime;
 }

@@ -9,7 +9,8 @@ public class VoidGamesHypergunner : ModuleRules {
 			"CoreUObject",
 			"Engine",
 			"InputCore",
-			"EnhancedInput"
+			"EnhancedInput",
+			"UMG"
 		});
 
 		this.PrivateDependencyModuleNames.AddRange(new string[] { });
