@@ -34,11 +34,30 @@ class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter, public IHea
 		UFUNCTION()
 		void Move(const FInputActionValue& Value);
 
+		UFUNCTION()
+		void DoNormalAttack(const FInputActionValue& Value);
+
+		UFUNCTION()
+		void DoHeavyAttack(const FInputActionValue& Value);
+
+		UFUNCTION()
+		void DoSkillAttack(const FInputActionValue& Value);
+
+		UFUNCTION()
+		void Dodge(const FInputActionValue& Value);
+
+		void GetHit();
+		void Victory();
+		void Defeat();
+
 		UFUNCTION(BlueprintCallable)
 		FAnimationListData FindAnimationsByName(const FName Name) const;
 
 		UFUNCTION(BlueprintCallable)
 		bool IsAnyAnimationPlayingInGivenList(const TArray<FAnimationData> AnimationDataArray) const;
+
+		float PlayAnimationOf(const TArray<FAnimationData>& Array, const int32 Index, const int32 AttackType);
+		void ResetCombos();
 
 		virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
@@ -60,4 +79,11 @@ class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter, public IHea
 
 		UPROPERTY(EditAnywhere, Category = "Custom|Health")
 		float MaximumHealth = 100.0f;
+
+	private:
+		bool bIsAnimationPlaying = false;
+		int32 BasicAttackIndex = 0;
+		int32 HeavyAttackIndex = 0;
+		int32 SkillAttackIndex = 0;
+		FTimerHandle ResetComboTimer = {};
 };

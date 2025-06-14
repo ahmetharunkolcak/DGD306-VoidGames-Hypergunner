@@ -13,7 +13,4 @@ struct FAnimationData {
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float PlayRate = 1.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float AnimationReleaseRate = 1.0f;
 };

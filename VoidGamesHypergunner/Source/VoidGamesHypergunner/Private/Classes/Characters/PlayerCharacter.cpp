@@ -69,6 +69,102 @@ void APlayerCharacter::Move(const FInputActionValue& Value) {
 	AddMovementInput(ActorForwardDirection, FacedForwardInput);
 }
 
+void APlayerCharacter::DoNormalAttack(const FInputActionValue& Value) {
+	if (!this -> bIsAnimationPlaying) {
+		const auto [Montages] = this -> FindAnimationsByName(FName("BasicAttack"));
+		const float AnimLength = this -> PlayAnimationOf(Montages, this -> BasicAttackIndex, 0);
+		GetWorld() -> GetTimerManager().SetTimer(
+			this -> ResetComboTimer,
+			this,
+			&APlayerCharacter::ResetCombos,
+			AnimLength,
+			false
+		);
+	}
+}
+
+void APlayerCharacter::DoHeavyAttack(const FInputActionValue& Value) {
+	if (!this -> bIsAnimationPlaying) {
+		const auto [Montages] = this -> FindAnimationsByName(FName("HeavyAttack"));
+		const float AnimLength = this -> PlayAnimationOf(Montages, this -> HeavyAttackIndex, 1);
+		GetWorld() -> GetTimerManager().SetTimer(
+			this -> ResetComboTimer,
+			this,
+			&APlayerCharacter::ResetCombos,
+			AnimLength,
+			false
+		);
+	}
+}
+
+void APlayerCharacter::DoSkillAttack(const FInputActionValue& Value) {
+	if (!this -> bIsAnimationPlaying) {
+		const auto [Montages] = this -> FindAnimationsByName(FName("SkillAttack"));
+		const float AnimLength = this -> PlayAnimationOf(Montages, this -> SkillAttackIndex, 2);
+		GetWorld() -> GetTimerManager().SetTimer(
+			this -> ResetComboTimer,
+			this,
+			&APlayerCharacter::ResetCombos,
+			AnimLength,
+			false
+		);
+	}
+}
+
+void APlayerCharacter::Dodge(const FInputActionValue& Value) {
+	if (!this -> bIsAnimationPlaying) {
+		const auto [Montages] = this -> FindAnimationsByName(FName("Dodge"));
+		const float AnimLength = this -> PlayAnimationOf(Montages, -1, -1);
+		GetWorld() -> GetTimerManager().SetTimer(
+			this -> ResetComboTimer,
+			this,
+			&APlayerCharacter::ResetCombos,
+			AnimLength,
+			false
+		);
+	}
+}
+void APlayerCharacter::GetHit() {
+	if (!this -> bIsAnimationPlaying) {
+		const auto [Montages] = this -> FindAnimationsByName(FName("GetHit"));
+		const float AnimLength = this -> PlayAnimationOf(Montages, -1, -1);
+		GetWorld() -> GetTimerManager().SetTimer(
+			this -> ResetComboTimer,
+			this,
+			&APlayerCharacter::ResetCombos,
+			AnimLength,
+			false
+		);
+	}
+}
+void APlayerCharacter::Victory() {
+	if (!this -> bIsAnimationPlaying) {
+		const auto [Montages] = this -> FindAnimationsByName(FName("Victory"));
+		const float AnimLength = this -> PlayAnimationOf(Montages, -1, -1);
+		GetWorld() -> GetTimerManager().SetTimer(
+			this -> ResetComboTimer,
+			this,
+			&APlayerCharacter::ResetCombos,
+			AnimLength,
+			false
+		);
+	}
+}
+
+void APlayerCharacter::Defeat() {
+	if (!this -> bIsAnimationPlaying) {
+		const auto [Montages] = this -> FindAnimationsByName(FName("Defeat"));
+		const float AnimLength = this -> PlayAnimationOf(Montages, -1, -1);
+		GetWorld() -> GetTimerManager().SetTimer(
+			this -> ResetComboTimer,
+			this,
+			&APlayerCharacter::ResetCombos,
+			AnimLength,
+			false
+		);
+	}
+}
+
 FAnimationListData APlayerCharacter::FindAnimationsByName(const FName Name) const {
 	if (const FAnimationListData* FoundAnimationData = this -> AnimationData.Find(Name);
 		FoundAnimationData != nullptr) {
@@ -80,13 +176,83 @@ FAnimationListData APlayerCharacter::FindAnimationsByName(const FName Name) cons
 
 bool APlayerCharacter::IsAnyAnimationPlayingInGivenList(const TArray<FAnimationData> AnimationDataArray) const {
 	const UAnimInstance* AnimInstance = this -> GetMesh() -> GetAnimInstance();
-	for (const auto& [Montage, PlayRate, AnimationReleaseRate] : AnimationDataArray) {
+	for (const auto& [Montage, PlayRate] : AnimationDataArray) {
 		if (AnimInstance -> Montage_IsPlaying(Montage)) {
 			return true;
 		}
 	}
 
 	return false;
+}
+
+float APlayerCharacter::PlayAnimationOf(const TArray<FAnimationData>& Array, const int32 Index, const int32 AttackType) {
+	if (this -> bIsAnimationPlaying) {
+		return 0.0f;
+	}
+
+	if (Index != -1) {
+		const auto& [Montage, PlayRate] = Array[Index];
+		const float AnimLength = this -> GetMesh() -> GetAnimInstance() -> Montage_Play(Montage, PlayRate);
+		if (const int32 ChangedAttackIndex = Index + 1;
+			ChangedAttackIndex >= Array.Num()) {
+			switch (AttackType) {
+				case 0: {
+					this -> BasicAttackIndex = 0;
+					break;
+				}
+
+				case 1: {
+					this -> HeavyAttackIndex = 0;
+					break;
+				}
+
+				case 2: {
+					this -> SkillAttackIndex = 0;
+					break;
+				}
+
+				default: {
+					break;
+				}
+			}
+			return AnimLength;
+		} else {
+			switch (AttackType) {
+				case 0: {
+					this -> BasicAttackIndex = ChangedAttackIndex;
+					break;
+				}
+
+				case 1: {
+					this -> HeavyAttackIndex = ChangedAttackIndex;
+					break;
+				}
+
+				case 2: {
+					this -> SkillAttackIndex = ChangedAttackIndex;
+					break;
+				}
+
+				default: {
+					break;
+				}
+			}
+
+			return AnimLength;
+		}
+	}
+
+	const int32 RandomIndex = FMath::RandRange(0, Array.Num() - 1);
+	const auto& [Montage, PlayRate] = Array[RandomIndex];
+	const float AnimLength = this -> GetMesh() -> GetAnimInstance() -> Montage_Play(Montage, PlayRate);
+	return AnimLength;
+}
+
+void APlayerCharacter::ResetCombos() {
+	this -> BasicAttackIndex = 0;
+	this -> HeavyAttackIndex = 0;
+	this -> SkillAttackIndex = 0;
+	this -> bIsAnimationPlaying = false;
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) {
