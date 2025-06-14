@@ -3,6 +3,8 @@
 #include "Kismet/GameplayStatics.h"
 
 #include "Classes/Actors/SpawnPoint.h"
+#include "GameFramework/HUD.h"
+#include "Interfaces/WidgetContainable.h"
 
 AMainGameMode::AMainGameMode() {
 	PrimaryActorTick.bCanEverTick = true;
@@ -27,8 +29,8 @@ void AMainGameMode::BeginPlay() {
 			const FTransform CurrentPlayerStartTransform = CurrentPlayerStart -> GetTransform();
 			
 			TSubclassOf<APlayerCharacter> SpawningActorClass = nullptr;
-			if (this -> PlayerCharacters.IsValidIndex(CurrentIndex)) {
-				SpawningActorClass = this -> PlayerCharacters[CurrentIndex];
+			if (this -> PlayerCharactersData.IsValidIndex(CurrentIndex)) {
+				SpawningActorClass = this -> PlayerCharactersData[CurrentIndex].Character3D.Get();
 			}
 
 			if (SpawningActorClass == nullptr) {
@@ -54,6 +56,12 @@ void AMainGameMode::BeginPlay() {
 				APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 				APawn* PlayerPawn = Cast<APawn>(SpawnedPlayerActor);
 				PlayerController -> Possess(PlayerPawn);
+
+				AHUD* HUD = PlayerController -> GetHUD();
+				if (HUD -> Implements<UWidgetContainable>()) {
+					IWidgetContainable* WidgetContainableInterface = Cast<IWidgetContainable>(HUD);
+					WidgetContainableInterface -> SetInGameCharacterImage(PlayerCharactersData[CurrentIndex].Character2D, true);
+				}
 			} else {
 				UGameInstance* CurrentGameInstance = GetGameInstance();
 
@@ -63,6 +71,12 @@ void AMainGameMode::BeginPlay() {
 					APlayerController* PlayerController = CreatedLocalPlayer -> GetPlayerController(CurrentWorld);
 					APawn* PlayerPawn = Cast<APawn>(SpawnedPlayerActor);
 					PlayerController -> Possess(PlayerPawn);
+
+					AHUD* HUD = UGameplayStatics::GetPlayerController(GetWorld(), 0) -> GetHUD();
+					if (HUD -> Implements<UWidgetContainable>()) {
+						IWidgetContainable* WidgetContainableInterface = Cast<IWidgetContainable>(HUD);
+						WidgetContainableInterface -> SetInGameCharacterImage(PlayerCharactersData[SpawnIndex].Character2D, false);
+					}
 				} else {
 					UE_LOG(LogTemp,
 					       Warning,
@@ -70,10 +84,7 @@ void AMainGameMode::BeginPlay() {
 				}
 			}
 
-			if (CurrentPlayerStart != nullptr && !CurrentPlayerStart -> IsPendingKillPending()) {
-				CurrentPlayerStart -> Destroy();
-				this -> SpawnedIndexes.Add(SpawnIndex);
-			}
+			this -> SpawnedIndexes.Add(SpawnIndex);
 		}
 	}
 

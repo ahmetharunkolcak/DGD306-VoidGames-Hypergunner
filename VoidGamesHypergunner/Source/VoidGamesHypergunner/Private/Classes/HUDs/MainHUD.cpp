@@ -9,6 +9,10 @@ AMainHUD::AMainHUD() {
 	PrimaryActorTick.bCanEverTick = true;
 }
 
+void AMainHUD::SetInGameCharacterImage(UTexture2D* ImageToSet, const bool bIsForLeftPlayer) {
+	this -> CachedCharacterData.Add(bIsForLeftPlayer, ImageToSet);
+}
+
 void AMainHUD::BeginPlay() {
 	Super::BeginPlay();
 
@@ -75,6 +79,8 @@ void AMainHUD::BeginPlay() {
 	this -> VisualContainableInterfaceOfInGameStatusWidget = InGameStatusWidgetInstance;
 	this -> VisualContainableInterfaceOfInGameStatusWidget -> SetTimer(GameTime);
 
+	this -> ApplyCharacterImages();
+
 	this -> bIsTimeObtainableFromGameMode = true;
 
 	InGameStatusWidgetInstance -> AddToViewport();
@@ -89,4 +95,14 @@ void AMainHUD::Tick(const float DeltaSeconds) {
 
 	const float CurrentTime = this -> TimerContainableInterfaceOfGameMode -> GetGameplayTime(true);
 	this -> VisualContainableInterfaceOfInGameStatusWidget -> SetTimer(CurrentTime);
+}
+
+void AMainHUD::ApplyCharacterImages() {
+	for (const TPair<bool, UTexture2D*>& CachedData : this -> CachedCharacterData) {
+		if (CachedData.Key) {
+			this -> VisualContainableInterfaceOfInGameStatusWidget -> SetLeftImage(CachedData.Value);
+		} else {
+			this -> VisualContainableInterfaceOfInGameStatusWidget -> SetRightImage(CachedData.Value);
+		}
+	}
 }

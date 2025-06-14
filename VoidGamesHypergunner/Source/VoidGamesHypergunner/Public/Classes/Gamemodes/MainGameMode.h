@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 
-#include "Classes/Characters/PlayerCharacter.h"
+#include "Structs/CharacterSelectionData.h"
 
 #include "Interfaces/TimerContainable.h"
 
@@ -22,9 +22,13 @@ class VOIDGAMESHYPERGUNNER_API AMainGameMode : public AGameModeBase, public ITim
 		virtual void BeginPlay() override;
 		virtual void Tick(const float DeltaSeconds) override;
 
+	private:
+		void CacheCharacterImages(UTexture2D* ImageToSet, const bool bIsForLeftPlayer);
+		void ApplyCachedImages();
+
 	protected:
 		UPROPERTY(EditAnywhere, Category = "Custom|PlayerSelection")
-		TArray<TSubclassOf<APlayerCharacter>> PlayerCharacters = {};
+		TArray<FCharacterSelectionData> PlayerCharactersData = {};
 
 		UPROPERTY(EditAnywhere, Category = "Custom|Gameplay")
 		float GameTime = 120.0f;

@@ -7,6 +7,7 @@
 
 class UProgressBar;
 class UTextBlock;
+class UImage;
 
 UCLASS()
 class VOIDGAMESHYPERGUNNER_API UInGameWidget : public UUserWidget, public IVisualContainable {
@@ -14,6 +15,8 @@ class VOIDGAMESHYPERGUNNER_API UInGameWidget : public UUserWidget, public IVisua
 
 	public:
 		virtual void SetTimer(const float Time) const override;
+		virtual void SetLeftImage(UTexture2D* Image) override;
+		virtual void SetRightImage(UTexture2D* Image) override;
 		virtual void UpdateHealthFor(const AActor* Player, const bool bIsLeftPlayer) override;
 
 	protected:
@@ -28,4 +31,10 @@ class VOIDGAMESHYPERGUNNER_API UInGameWidget : public UUserWidget, public IVisua
 
 		UPROPERTY(meta = (BindWidget))
 		UTextBlock* TimeValue = nullptr;
+
+		UPROPERTY(meta = (BindWidget))
+		UImage* ImageL = nullptr;
+
+		UPROPERTY(meta = (BindWidget))
+		UImage* ImageR = nullptr;
 };
