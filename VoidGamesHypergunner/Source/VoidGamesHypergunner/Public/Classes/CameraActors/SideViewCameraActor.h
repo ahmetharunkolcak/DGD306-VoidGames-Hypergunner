@@ -28,7 +28,7 @@ class VOIDGAMESHYPERGUNNER_API ASideViewCameraActor : public ACameraActor {
 
 	protected:
 		UPROPERTY(EditAnywhere, Category = "Custom|Settings")
-		float ZoomFactor = 0.5f;
+		float ZoomFactor = 0.25f;
 
 		UPROPERTY(EditAnywhere, Category = "Custom|Settings")
 		float CameraSmoothingSpeed = 3.0f;

@@ -69,12 +69,32 @@ void APlayerCharacter::Move(const FInputActionValue& Value) {
 	AddMovementInput(ActorForwardDirection, FacedForwardInput);
 }
 
+FAnimationListData APlayerCharacter::FindAnimationsByName(const FName Name) const {
+	if (const FAnimationListData* FoundAnimationData = this -> AnimationData.Find(Name);
+		FoundAnimationData != nullptr) {
+		return *FoundAnimationData;
+	}
+
+	return FAnimationListData({});
+}
+
+bool APlayerCharacter::IsAnyAnimationPlayingInGivenList(const TArray<FAnimationData> AnimationDataArray) const {
+	const UAnimInstance* AnimInstance = this -> GetMesh() -> GetAnimInstance();
+	for (const auto& [Montage, PlayRate, AnimationReleaseRate] : AnimationDataArray) {
+		if (AnimInstance -> Montage_IsPlaying(Montage)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-		for (int32 CurrentIndex = 0; CurrentIndex < this -> InputBindingDatas.Num(); ++CurrentIndex) {
-			const auto& [ActionName, Action, TriggerEvents, FunctionName] = this -> InputBindingDatas[CurrentIndex];
+		for (int32 CurrentIndex = 0; CurrentIndex < this -> InputBindingData.Num(); ++CurrentIndex) {
+			const auto& [ActionName, Action, TriggerEvents, FunctionName] = this -> InputBindingData[CurrentIndex];
 			bool bIsFailed = false;
 
 			if (ActionName.IsNone() || ActionName.IsEqual("")) {

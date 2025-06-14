@@ -8,6 +8,8 @@
 
 #include "Interfaces/HealthComponentContainable.h"
 
+#include "Structs/AnimationListData.h"
+
 #include "PlayerCharacter.generated.h"
 
 class AController;
@@ -32,6 +34,12 @@ class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter, public IHea
 		UFUNCTION()
 		void Move(const FInputActionValue& Value);
 
+		UFUNCTION(BlueprintCallable)
+		FAnimationListData FindAnimationsByName(const FName Name) const;
+
+		UFUNCTION(BlueprintCallable)
+		bool IsAnyAnimationPlayingInGivenList(const TArray<FAnimationData> AnimationDataArray) const;
+
 		virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 	protected:
@@ -39,7 +47,10 @@ class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter, public IHea
 		UInputMappingContext* InputMappingContext = nullptr;
 
 		UPROPERTY(EditAnywhere, Category = "Custom|Input")
-		TArray<FInputBindingData> InputBindingDatas;
+		TArray<FInputBindingData> InputBindingData = {};
+
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Custom|Animation")
+		TMap<FName, FAnimationListData> AnimationData = {};
 
 		UPROPERTY(EditAnywhere, Category = "Custom|Movement|BackwardsSpeedMultiplier")
 		float BackwardsMovementSpeedMultiplier = 0.6f;

@@ -22,5 +22,5 @@ struct FInputBindingData {
 	TArray<ETriggerEvent> TriggerEvents = {};
 
 	UPROPERTY(EditAnywhere)
-	FName FunctionName;
+	FName FunctionName = "";
 };
