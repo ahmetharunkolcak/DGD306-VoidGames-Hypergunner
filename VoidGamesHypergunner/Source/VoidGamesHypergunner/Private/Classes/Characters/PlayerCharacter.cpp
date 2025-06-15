@@ -389,7 +389,7 @@ void APlayerCharacter::PlayAnimationOf(const TArray<FAnimationData>& Array, cons
 			this -> AnimationCountdownTimerHandler,
 			this,
 			&APlayerCharacter::ResetAnimationPlayState,
-			AnimLength * this -> AnimationCutoffRate,
+			(AnimLength / PlayRate) * this -> AnimationCutoffRate,
 			false
 		);
 
@@ -412,7 +412,7 @@ void APlayerCharacter::PlayAnimationOf(const TArray<FAnimationData>& Array, cons
 		this -> AnimationCountdownTimerHandler,
 		this,
 		&APlayerCharacter::ResetAnimationPlayState,
-		AnimLength * this -> AnimationCutoffRate,
+		(AnimLength / PlayRate) * this -> AnimationCutoffRate,
 		false
 	);
 

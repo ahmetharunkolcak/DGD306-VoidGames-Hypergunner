@@ -119,7 +119,7 @@ class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter, public IHea
 		int32 HeavyAttackIndex = 0;
 		int32 SkillAttackIndex = 0;
 
-		float AnimationCutoffRate = 0.5f;
+		float AnimationCutoffRate = 0.75f;
 		FTimerHandle AnimationCountdownTimerHandler = {};
 		FTimerHandle ResetComboTimerHandler = {};
 };
