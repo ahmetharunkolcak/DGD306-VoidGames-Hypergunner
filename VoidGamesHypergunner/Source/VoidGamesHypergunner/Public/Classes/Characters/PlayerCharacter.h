@@ -4,6 +4,7 @@
 #include "GameFramework/Character.h"
 
 #include "InputActionValue.h"
+#include "Classes/ActorComponents/HealthComponent.h"
 #include "Structs/InputBindingData.h"
 
 #include "Interfaces/HealthComponentContainable.h"
@@ -31,6 +32,9 @@ class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter, public IHea
 		APlayerCharacter();
 
 		virtual float GetCharacterHealthRate() const override;
+		FORCEINLINE virtual float GetCharacterCurrentHealth() const override { return this -> HealthComponent -> GetCurrentHealth(); }
+		FORCEINLINE virtual float GetCharacterMaximumHealth() const override { return this -> HealthComponent -> GetMaximumHealth(); }
+
 		void TryDealingDamage(const float Amount);
 		virtual float TakeDamage(const float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 		FORCEINLINE virtual int32 GetPlayerIndex() const { return this -> PlayerIndex; }

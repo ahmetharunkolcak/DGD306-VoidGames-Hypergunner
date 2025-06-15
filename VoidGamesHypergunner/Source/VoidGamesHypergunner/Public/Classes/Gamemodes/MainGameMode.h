@@ -18,13 +18,12 @@ class VOIDGAMESHYPERGUNNER_API AMainGameMode : public AGameModeBase, public ITim
 
 		FORCEINLINE virtual float GetGameplayTime(const bool bIsCurrentTime) const override;
 
+		UFUNCTION()
+		void HandleDeath(int32 PlayerIndex);
+
 	protected:
 		virtual void BeginPlay() override;
 		virtual void Tick(const float DeltaSeconds) override;
-
-	private:
-		void CacheCharacterImages(UTexture2D* ImageToSet, const bool bIsForLeftPlayer);
-		void ApplyCachedImages();
 
 	protected:
 		UPROPERTY(EditAnywhere, Category = "Custom|PlayerSelection")

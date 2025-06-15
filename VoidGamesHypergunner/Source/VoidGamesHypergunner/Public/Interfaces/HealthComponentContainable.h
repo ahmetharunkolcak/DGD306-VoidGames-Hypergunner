@@ -14,4 +14,6 @@ class VOIDGAMESHYPERGUNNER_API IHealthComponentContainable {
 
 	public:
 		virtual float GetCharacterHealthRate() const = 0;
+		FORCEINLINE virtual float GetCharacterCurrentHealth() const = 0;
+		FORCEINLINE virtual float GetCharacterMaximumHealth() const = 0;
 };

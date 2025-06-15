@@ -54,6 +54,7 @@ void AMainGameMode::BeginPlay() {
 			if (SpawnIndex == 0) {
 				AActor* SpawnedPlayerActor = CurrentWorld -> SpawnActor(SpawningActorClass, &CurrentPlayerStartTransform);
 				Cast<APlayerCharacter>(SpawnedPlayerActor) -> SetPlayerIndex(SpawnIndex);
+				Cast<APlayerCharacter>(SpawnedPlayerActor) -> OnDeath.AddDynamic(this, &AMainGameMode::HandleDeath);
 				APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 				APawn* PlayerPawn = Cast<APawn>(SpawnedPlayerActor);
 				PlayerController -> Possess(PlayerPawn);
@@ -70,6 +71,7 @@ void AMainGameMode::BeginPlay() {
 				if (const ULocalPlayer* CreatedLocalPlayer = CurrentGameInstance -> CreateLocalPlayer(-1, OutErrorMessage, true)) {
 					AActor* SpawnedPlayerActor = CurrentWorld -> SpawnActor(SpawningActorClass, &CurrentPlayerStartTransform);
 					Cast<APlayerCharacter>(SpawnedPlayerActor) -> SetPlayerIndex(SpawnIndex);
+					Cast<APlayerCharacter>(SpawnedPlayerActor) -> OnDeath.AddDynamic(this, &AMainGameMode::HandleDeath);
 					APlayerController* PlayerController = CreatedLocalPlayer -> GetPlayerController(CurrentWorld);
 					APawn* PlayerPawn = Cast<APawn>(SpawnedPlayerActor);
 					PlayerController -> Possess(PlayerPawn);
@@ -101,4 +103,8 @@ void AMainGameMode::Tick(const float DeltaSeconds) {
 
 float AMainGameMode::GetGameplayTime(const bool bIsCurrentTime) const {
 	return bIsCurrentTime ? this -> CurrentTime : this -> GameTime;
+}
+
+void AMainGameMode::HandleDeath(int32 PlayerIndex) {
+	SetActorTickEnabled(false);
 }

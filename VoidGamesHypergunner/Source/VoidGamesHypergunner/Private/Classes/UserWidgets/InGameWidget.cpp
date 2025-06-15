@@ -47,15 +47,21 @@ void UInGameWidget::UpdateHealthFor(const AActor* Player, const bool bIsLeftPlay
 
 	const IHealthComponentContainable* HealthComponentContainableInterface = Cast<IHealthComponentContainable>(Player);
 	const float CharacterHealthRate = HealthComponentContainableInterface -> GetCharacterHealthRate();
+	const float CharacterCurrentHealth = HealthComponentContainableInterface -> GetCharacterCurrentHealth();
+	const float CharacterMaximumHealth = HealthComponentContainableInterface -> GetCharacterMaximumHealth();
 
 	if (bIsLeftPlayer) {
 		this -> AnimTimeForHealthBarL = 0.0f;
 		this -> bIsUpdatingLeftHealthBar = true;
 		this -> TargetHealthForBarL = CharacterHealthRate;
+		this -> TargetCurrentHealthForBarL = CharacterCurrentHealth;
+		this -> TargetMaximumHealthForBarL = CharacterMaximumHealth;
 	} else {
 		this -> AnimTimeForHealthBarR = 0.0f;
 		this -> bIsUpdatingRightHealthBar = true;
 		this -> TargetHealthForBarR = CharacterHealthRate;
+		this -> TargetCurrentHealthForBarR = CharacterCurrentHealth;
+		this -> TargetMaximumHealthForBarR = CharacterMaximumHealth;
 	}
 }
 
@@ -83,8 +89,8 @@ void UInGameWidget::HandleHealthChanged(const int32 PlayerIndex) {
 }
 
 void UInGameWidget::HandleDeath(int32 PlayerIndex) {
-	if (this -> FadeOutAnimation != nullptr) {
-		PlayAnimation(this -> FadeOutAnimation);
+	if (this -> SwitchToFinishScreen != nullptr) {
+		PlayAnimation(this -> SwitchToFinishScreen);
 	} else {
 		UE_LOG(LogTemp,
 		       Warning,
@@ -129,17 +135,33 @@ void UInGameWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime) {
 	if (bIsUpdatingLeftHealthBar) {
 		if (FMath::IsNearlyEqual(this -> AnimTimeForHealthBarL, this -> HealthBarUpdateAnimationTime, 0.001f)) {
 			this -> HealthBarL -> SetPercent(this -> TargetHealthForBarL);
+			this -> LastCurrentHealthForBarL = this -> TargetCurrentHealthForBarL;
+			const FString HealthText = FString::Printf(TEXT("%d / %d"),
+			                                           FMath::RoundToInt(this -> TargetCurrentHealthForBarL),
+			                                           FMath::RoundToInt(this -> TargetMaximumHealthForBarL));
+			this -> HealthValueL -> SetText(FText::FromString(HealthText));
 			this -> AnimTimeForHealthBarL = this -> HealthBarUpdateAnimationTime;
 			this -> bIsUpdatingLeftHealthBar = false;
 		} else {
 			this -> AnimTimeForHealthBarL += InDeltaTime;
-			float Alpha = FMath::Clamp(this -> AnimTimeForHealthBarL / this -> HealthBarUpdateAnimationTime, 0.0f, 1.0f);
+			const float RawAlpha = this -> AnimTimeForHealthBarR / this -> HealthBarUpdateAnimationTime;
+			const float Alpha = FMath::Clamp(FMath::InterpEaseInOut(0.0f, 1.0f, RawAlpha, this -> AnimationInterpolationSpeed), 0.0f, 1.0f);
 			const float DisplayedPercentageForL = this -> HealthBarL -> GetPercent();
 			const float NewBarPercentValue = FMath::Lerp(DisplayedPercentageForL, this -> TargetHealthForBarL, Alpha);
+			this -> LastCurrentHealthForBarL = FMath::Lerp(this -> LastCurrentHealthForBarL, this -> TargetCurrentHealthForBarL, Alpha);
 			this -> HealthBarL -> SetPercent(NewBarPercentValue);
+			FString HealthText = FString::Printf(TEXT("%d / %d"),
+			                                     FMath::RoundToInt(this -> LastCurrentHealthForBarL),
+			                                     FMath::RoundToInt(this -> TargetMaximumHealthForBarL));
+			this -> HealthValueL -> SetText(FText::FromString(HealthText));
 
 			if (FMath::IsNearlyEqual(Alpha, 1.0f)) {
 				this -> HealthBarL -> SetPercent(this -> TargetHealthForBarL);
+				this -> LastCurrentHealthForBarL = this -> TargetCurrentHealthForBarL;
+				HealthText = FString::Printf(TEXT("%d / %d"),
+											 FMath::RoundToInt(this -> TargetCurrentHealthForBarL),
+											 FMath::RoundToInt(this -> TargetMaximumHealthForBarL));
+				this -> HealthValueL -> SetText(FText::FromString(HealthText));
 				this -> AnimTimeForHealthBarL = this -> HealthBarUpdateAnimationTime;
 				this -> bIsUpdatingLeftHealthBar = false;
 			}
@@ -149,19 +171,33 @@ void UInGameWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime) {
 	if (bIsUpdatingRightHealthBar) {
 		if (FMath::IsNearlyEqual(this -> AnimTimeForHealthBarR, this -> HealthBarUpdateAnimationTime, 0.001f)) {
 			this -> HealthBarR -> SetPercent(this -> TargetHealthForBarR);
+			this -> LastCurrentHealthForBarR = this -> TargetCurrentHealthForBarR;
+			const FString HealthText = FString::Printf(TEXT("%d \\ %d"),
+													   FMath::RoundToInt(this -> TargetCurrentHealthForBarR),
+													   FMath::RoundToInt(this -> TargetMaximumHealthForBarR));
+			this -> HealthValueR -> SetText(FText::FromString(HealthText));
 			this -> AnimTimeForHealthBarR = this -> HealthBarUpdateAnimationTime;
 			this -> bIsUpdatingRightHealthBar = false;
 		} else {
 			this -> AnimTimeForHealthBarR += InDeltaTime;
 			const float RawAlpha = this -> AnimTimeForHealthBarR / this -> HealthBarUpdateAnimationTime;
 			const float Alpha = FMath::Clamp(FMath::InterpEaseInOut(0.0f, 1.0f, RawAlpha, this -> AnimationInterpolationSpeed), 0.0f, 1.0f);
-
 			const float DisplayedPercentageForR = this -> HealthBarR -> GetPercent();
 			const float NewBarPercentValue = FMath::Lerp(DisplayedPercentageForR, this -> TargetHealthForBarR, Alpha);
+			this -> LastCurrentHealthForBarR = FMath::Lerp(this -> LastCurrentHealthForBarR, this -> TargetCurrentHealthForBarR, Alpha);
 			this -> HealthBarR -> SetPercent(NewBarPercentValue);
+			FString HealthText = FString::Printf(TEXT("%d \\ %d"),
+			                                     FMath::RoundToInt(this -> LastCurrentHealthForBarR),
+			                                     FMath::RoundToInt(this -> TargetMaximumHealthForBarR));
+			this -> HealthValueR -> SetText(FText::FromString(HealthText));
 
 			if (FMath::IsNearlyEqual(Alpha, 1.0f)) {
 				this -> HealthBarR -> SetPercent(this -> TargetHealthForBarR);
+				this -> LastCurrentHealthForBarR = this -> TargetCurrentHealthForBarR;
+				HealthText = FString::Printf(TEXT("%d \\ %d"),
+											 FMath::RoundToInt(this -> TargetCurrentHealthForBarR),
+											 FMath::RoundToInt(this -> TargetMaximumHealthForBarR));
+				this -> HealthValueR -> SetText(FText::FromString(HealthText));
 				this -> AnimTimeForHealthBarR = this -> HealthBarUpdateAnimationTime;
 				this -> bIsUpdatingRightHealthBar = false;
 			}

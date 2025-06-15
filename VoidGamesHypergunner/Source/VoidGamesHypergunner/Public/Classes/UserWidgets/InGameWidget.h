@@ -39,6 +39,12 @@ class VOIDGAMESHYPERGUNNER_API UInGameWidget : public UUserWidget, public IVisua
 		UProgressBar* HealthBarR = nullptr;
 
 		UPROPERTY(meta = (BindWidget))
+		UTextBlock* HealthValueL = nullptr;
+
+		UPROPERTY(meta = (BindWidget))
+		UTextBlock* HealthValueR = nullptr;
+
+		UPROPERTY(meta = (BindWidget))
 		UTextBlock* TimeValue = nullptr;
 
 		UPROPERTY(meta = (BindWidget))
@@ -48,7 +54,7 @@ class VOIDGAMESHYPERGUNNER_API UInGameWidget : public UUserWidget, public IVisua
 		UImage* ImageR = nullptr;
 
 		UPROPERTY(meta = (BindWidgetAnim), Transient)
-		UWidgetAnimation* FadeOutAnimation = nullptr;
+		UWidgetAnimation* SwitchToFinishScreen = nullptr;
 
 		UPROPERTY()
 		TArray<APlayerCharacter*> TrackedPlayers;
@@ -60,6 +66,15 @@ class VOIDGAMESHYPERGUNNER_API UInGameWidget : public UUserWidget, public IVisua
 		float AnimationInterpolationSpeed = 3.0f;
 
 	private:
+		float LastCurrentHealthForBarL = 100.0f;
+		float LastCurrentHealthForBarR = 100.0f;
+
+		float TargetCurrentHealthForBarL = 100.0f;
+		float TargetCurrentHealthForBarR = 100.0f;
+
+		float TargetMaximumHealthForBarL = 100.0f;
+		float TargetMaximumHealthForBarR = 100.0f;
+
 		float TargetHealthForBarL = 1.0f;
 		float TargetHealthForBarR = 1.0f;
 

@@ -51,7 +51,7 @@ void ASideViewCameraActor::Tick(const float DeltaTime) {
 	Super::Tick(DeltaTime);
 
 	if (this -> bDidRepositioningEnded) {
-		PrimaryActorTick.bCanEverTick = false;
+		SetActorTickEnabled(false);
 		return;
 	}
 
