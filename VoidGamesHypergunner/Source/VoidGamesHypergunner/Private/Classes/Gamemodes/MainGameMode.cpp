@@ -4,6 +4,7 @@
 
 #include "Classes/Actors/SpawnPoint.h"
 #include "Classes/CameraActors/SideViewCameraActor.h"
+#include "Classes/HUDs/MainHUD.h"
 #include "GameFramework/HUD.h"
 #include "Interfaces/WidgetContainable.h"
 
@@ -111,6 +112,11 @@ void AMainGameMode::Tick(const float DeltaSeconds) {
 	Super::Tick(DeltaSeconds);
 
 	this -> CurrentTime -= DeltaSeconds;
+	if (this -> CurrentTime <= 0.0f) {
+		this -> CurrentTime = 0.0f;
+		Cast<AMainHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0) -> GetHUD()) -> TriggerReturnScreen(true);
+		SetActorTickEnabled(false);
+	}
 }
 
 float AMainGameMode::GetGameplayTime(const bool bIsCurrentTime) const {

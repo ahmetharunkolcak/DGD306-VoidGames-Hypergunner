@@ -41,5 +41,5 @@ void UFinishScreenAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequ
 		return;
 	}
 
-	HUD -> TriggerReturnScreen();
+	HUD -> TriggerReturnScreen(false);
 }

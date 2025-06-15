@@ -36,6 +36,7 @@ class VOIDGAMESHYPERGUNNER_API UInGameWidget : public UUserWidget, public IVisua
 		void OnReturnToMainMenuClicked();
 
 		FORCEINLINE UWidgetAnimation* GetTriggerButtonScreenAnimation() const { return this -> TriggerButtonScreen; }
+		FORCEINLINE UWidgetAnimation* GetSwitchToFinishScreenAnimation() const { return this -> SwitchToFinishScreen; }
 
 	protected:
 		virtual void NativeConstruct() override;

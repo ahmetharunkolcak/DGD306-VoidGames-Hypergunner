@@ -21,7 +21,7 @@ class VOIDGAMESHYPERGUNNER_API AMainHUD : public AHUD, public IWidgetContainable
 		AMainHUD();
 
 		virtual void SetInGameCharacterImage(UTexture2D* ImageToSet, const bool bIsForLeftPlayer) override;
-		virtual void TriggerReturnScreen();
+		virtual void TriggerReturnScreen(const bool bIsTimeUp);
 
 	protected:
 		virtual void BeginPlay() override;

@@ -15,7 +15,7 @@ void AMainHUD::SetInGameCharacterImage(UTexture2D* ImageToSet, const bool bIsFor
 	this -> CachedCharacterData.Add(bIsForLeftPlayer, ImageToSet);
 }
 
-void AMainHUD::TriggerReturnScreen() {
+void AMainHUD::TriggerReturnScreen(const bool bIsTimeUp) {
 	if (UGameplayStatics::SetGamePaused(GetWorld(), true)) {
 		UInGameWidget* InGameWidget = Cast<UInGameWidget>(this -> InGameWidgetInstance);
 		InGameWidget -> SetIsFocusable(true);
@@ -30,6 +30,9 @@ void AMainHUD::TriggerReturnScreen() {
 		}
 
 		InGameWidget -> PlayAnimation(InGameWidget -> GetTriggerButtonScreenAnimation());
+		if (bIsTimeUp) {
+			InGameWidget -> PlayAnimation(InGameWidget -> GetSwitchToFinishScreenAnimation());
+		}
 	}
 }
 
