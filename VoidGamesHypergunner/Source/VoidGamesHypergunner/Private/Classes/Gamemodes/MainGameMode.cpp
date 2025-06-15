@@ -94,6 +94,17 @@ void AMainGameMode::BeginPlay() {
 	}
 
 	this -> CurrentTime = this -> GameTime;
+
+	if (const auto& [Sound, MinVolume, MaxVolume, MinPitch, MaxPitch] = BackgroundMusic;
+		Sound != nullptr) {
+		const float Volume = FMath::Min(MinVolume, MaxVolume);
+		const float Pitch = FMath::Min(MinPitch, MaxPitch);
+		UGameplayStatics::PlaySound2D(GetWorld(), Sound, Volume, Pitch);
+	} else {
+		UE_LOG(LogTemp,
+		       Warning,
+		       TEXT("AMainGameMode::BeginPlay: Failed to play background music, Sound is null!"));
+	}
 }
 
 void AMainGameMode::Tick(const float DeltaSeconds) {

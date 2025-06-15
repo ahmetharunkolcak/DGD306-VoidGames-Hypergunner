@@ -32,6 +32,9 @@ class VOIDGAMESHYPERGUNNER_API AMainGameMode : public AGameModeBase, public ITim
 		UPROPERTY(EditAnywhere, Category = "Custom|Gameplay")
 		float GameTime = 120.0f;
 
+		UPROPERTY(EditAnywhere, Category = "Custom|Music")
+		FSoundData BackgroundMusic = {};
+
 	private:
 		TArray<int32> SpawnedIndexes = {};
 
