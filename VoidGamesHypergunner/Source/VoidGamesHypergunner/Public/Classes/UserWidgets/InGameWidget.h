@@ -25,6 +25,9 @@ class VOIDGAMESHYPERGUNNER_API UInGameWidget : public UUserWidget, public IVisua
 		UFUNCTION()
 		void HandleHealthChanged(int32 PlayerIndex);
 
+		UFUNCTION()
+		void HandleDeath(int32 PlayerIndex);
+
 	protected:
 		virtual FText GetFormattedTime(float Time) const;
 		virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
@@ -43,6 +46,9 @@ class VOIDGAMESHYPERGUNNER_API UInGameWidget : public UUserWidget, public IVisua
 
 		UPROPERTY(meta = (BindWidget))
 		UImage* ImageR = nullptr;
+
+		UPROPERTY(meta = (BindWidgetAnim), Transient)
+		UWidgetAnimation* FadeOutAnimation = nullptr;
 
 		UPROPERTY()
 		TArray<APlayerCharacter*> TrackedPlayers;

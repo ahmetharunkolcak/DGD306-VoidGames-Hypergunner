@@ -6,7 +6,6 @@
 #include "EnhancedInputComponent.h"
 
 #include "Classes/ActorComponents/HealthComponent.h"
-#include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 APlayerCharacter::APlayerCharacter() {
@@ -30,6 +29,15 @@ void APlayerCharacter::TryDealingDamage(const float Amount) {
 	FCollisionQueryParams CollisionQueryParams;
 	CollisionQueryParams.AddIgnoredActor(this);
 
+	if (const FSoundListData* AttackingSounds = this -> FindSoundsByName("Attack");
+		AttackingSounds != nullptr) {
+		this -> PlaySoundOf(AttackingSounds -> Sounds, -1);
+	} else {
+		UE_LOG(LogTemp,
+			   Warning,
+			   TEXT("APlayerCharacter::TryDealingDamage: AttackingSounds has no sound data."));
+	}
+
 	if (FHitResult HitResult;
 		GetWorld() -> LineTraceSingleByChannel(HitResult, Start, End, ECC_Pawn, CollisionQueryParams)) {
 		if (AActor* HitActor = HitResult.GetActor()) {
@@ -40,11 +48,57 @@ void APlayerCharacter::TryDealingDamage(const float Amount) {
 
 float APlayerCharacter::TakeDamage(const float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser) {
 	const float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+
+	if (this -> bDidFinishHimTriggered) {
+		return ActualDamage;
+	}
+
+	if (this -> bDidTheCharacterDie) {
+		if (APlayerCharacter* WinnerPlayer = Cast<APlayerCharacter>(DamageCauser);
+			WinnerPlayer != nullptr) {
+			WinnerPlayer -> Victory();
+			this -> Defeat();
+		}
+
+		if (const FAnimationListData* DefeatAnimationList = this -> FindAnimationsByName(FName("Defeat"));
+			DefeatAnimationList != nullptr) {
+			const TArray<FAnimationData>& Montages = DefeatAnimationList->Montages;
+			this -> PlayAnimationOf(Montages, -1, -1);
+		} else {
+			UE_LOG(LogTemp,
+			       Warning,
+			       TEXT("APlayerCharacter::TakeDamage: DefeatAnimationList is nullptr for Loser Player!"));
+		}
+	}
+
 	if (this -> HealthComponent != nullptr) {
 		this -> HealthComponent -> UpdateHealth(ActualDamage, true, false);
 		this -> OnHealthChanged.Broadcast(this -> PlayerIndex);
+
 		if (this -> HealthComponent -> GetCurrentHealth() <= 0.0f) {
 			this -> Die();
+		} else {
+			this -> GetHit();
+		}
+
+		if (const FSoundListData* GettingHitSounds = this -> FindSoundsByName("GettingHit");
+			GettingHitSounds != nullptr) {
+			this -> PlaySoundOf(GettingHitSounds -> Sounds, -1);
+		} else {
+			UE_LOG(LogTemp,
+			       Warning,
+			       TEXT("APlayerCharacter::TakeDamage: GettingHitSounds has no sound data."));
+		}
+
+		if (this -> bDidTheCharacterDie) {
+			if (const FSoundListData* GettingHitFinisherSounds = this -> FindSoundsByName("GettingHitFinisher");
+				GettingHitFinisherSounds != nullptr) {
+				this -> PlaySoundOf(GettingHitFinisherSounds -> Sounds, -1);
+			} else {
+				UE_LOG(LogTemp,
+					   Warning,
+					   TEXT("APlayerCharacter::TakeDamage: GettingHitFinisherSounds has no sound data."));
+			}
 		}
 	}
 
@@ -101,113 +155,140 @@ void APlayerCharacter::Move(const FInputActionValue& Value) {
 
 void APlayerCharacter::DoNormalAttack(const FInputActionValue& Value) {
 	if (!this -> bIsAnimationPlaying) {
-		const auto [Montages] = this -> FindAnimationsByName(FName("BasicAttack"));
-		const float AnimLength = this -> PlayAnimationOf(Montages, this -> BasicAttackIndex, 0);
-		GetWorld() -> GetTimerManager().SetTimer(
-			this -> ResetComboTimer,
-			this,
-			&APlayerCharacter::ResetCombos,
-			AnimLength,
-			false
-		);
+		if (const FAnimationListData* NormalAttackAnimationList = this -> FindAnimationsByName(FName("NormalAttack"));
+			NormalAttackAnimationList != nullptr) {
+			const TArray<FAnimationData>& Montages = NormalAttackAnimationList -> Montages;
+			this -> PlayAnimationOf(Montages, this -> NormalAttackIndex, 0);
+		} else {
+			UE_LOG(LogTemp,
+			       Warning,
+			       TEXT("APlayerCharacter::DoNormalAttack: NormalAttackAnimationList is nullptr!"));
+		}
 	}
 }
 
 void APlayerCharacter::DoHeavyAttack(const FInputActionValue& Value) {
 	if (!this -> bIsAnimationPlaying) {
-		const auto [Montages] = this -> FindAnimationsByName(FName("HeavyAttack"));
-		const float AnimLength = this -> PlayAnimationOf(Montages, this -> HeavyAttackIndex, 1);
-		GetWorld() -> GetTimerManager().SetTimer(
-			this -> ResetComboTimer,
-			this,
-			&APlayerCharacter::ResetCombos,
-			AnimLength,
-			false
-		);
+		if (const FAnimationListData* HeavyAttackAnimationList = this -> FindAnimationsByName(FName("HeavyAttack"));
+			HeavyAttackAnimationList != nullptr) {
+			const TArray<FAnimationData>& Montages = HeavyAttackAnimationList -> Montages;
+			this -> PlayAnimationOf(Montages, this -> HeavyAttackIndex, 1);
+		} else {
+			UE_LOG(LogTemp,
+				   Warning,
+				   TEXT("APlayerCharacter::DoHeavyAttack: HeavyAttackAnimationList is nullptr!"));
+		}
 	}
 }
 
 void APlayerCharacter::DoSkillAttack(const FInputActionValue& Value) {
 	if (!this -> bIsAnimationPlaying) {
-		const auto [Montages] = this -> FindAnimationsByName(FName("SkillAttack"));
-		const float AnimLength = this -> PlayAnimationOf(Montages, this -> SkillAttackIndex, 2);
-		GetWorld() -> GetTimerManager().SetTimer(
-			this -> ResetComboTimer,
-			this,
-			&APlayerCharacter::ResetCombos,
-			AnimLength,
-			false
-		);
+		if (const FAnimationListData* SkillAttackAnimationList = this -> FindAnimationsByName(FName("SkillAttack"));
+			SkillAttackAnimationList != nullptr) {
+			const TArray<FAnimationData>& Montages = SkillAttackAnimationList -> Montages;
+			this -> PlayAnimationOf(Montages, this -> SkillAttackIndex, 2);
+		} else {
+			UE_LOG(LogTemp,
+				   Warning,
+				   TEXT("APlayerCharacter::DoSkillAttack: SkillAttackAnimationList is nullptr!"));
+		}
 	}
 }
 
 void APlayerCharacter::Dodge(const FInputActionValue& Value) {
 	if (!this -> bIsAnimationPlaying) {
-		const auto [Montages] = this -> FindAnimationsByName(FName("Dodge"));
-		const float AnimLength = this -> PlayAnimationOf(Montages, -1, -1);
-		GetWorld() -> GetTimerManager().SetTimer(
-			this -> ResetComboTimer,
-			this,
-			&APlayerCharacter::ResetCombos,
-			AnimLength,
-			false
-		);
+		if (const FAnimationListData* DodgeAnimationList = this -> FindAnimationsByName(FName("Dodge"));
+			DodgeAnimationList != nullptr) {
+			const TArray<FAnimationData>& Montages = DodgeAnimationList -> Montages;
+			this -> PlayAnimationOf(Montages, -1, -1);
+
+			const FSoundListData* DodgeSounds = this -> FindSoundsByName("Dodge");
+			if (DodgeSounds != nullptr) {
+				this -> PlaySoundOf(DodgeSounds -> Sounds, -1);
+			} else {
+				UE_LOG(LogTemp,
+					   Warning,
+					   TEXT("APlayerCharacter::Dodge: DodgeSounds has no sound data."));
+			}
+		} else {
+			UE_LOG(LogTemp,
+				   Warning,
+				   TEXT("APlayerCharacter::Dodge: DodgeAnimationList is nullptr!"));
+		}
 	}
 }
 void APlayerCharacter::GetHit() {
-	if (!this -> bIsAnimationPlaying) {
-		const auto [Montages] = this -> FindAnimationsByName(FName("GetHit"));
-		const float AnimLength = this -> PlayAnimationOf(Montages, -1, -1);
-		GetWorld() -> GetTimerManager().SetTimer(
-			this -> ResetComboTimer,
-			this,
-			&APlayerCharacter::ResetCombos,
-			AnimLength,
-			false
-		);
+	if (const FAnimationListData* GetHitAnimationList = this -> FindAnimationsByName(FName("GetHit"));
+		GetHitAnimationList != nullptr) {
+		const TArray<FAnimationData>& Montages = GetHitAnimationList -> Montages;
+		this -> PlayAnimationOf(Montages, -1, -1);
+	} else {
+		UE_LOG(LogTemp,
+			   Warning,
+			   TEXT("APlayerCharacter::GetHit: GetHitAnimationList is nullptr!"));
 	}
 }
 void APlayerCharacter::Victory() {
-	if (!this -> bIsAnimationPlaying) {
-		const auto [Montages] = this -> FindAnimationsByName(FName("Victory"));
-		const float AnimLength = this -> PlayAnimationOf(Montages, -1, -1);
-		GetWorld() -> GetTimerManager().SetTimer(
-			this -> ResetComboTimer,
-			this,
-			&APlayerCharacter::ResetCombos,
-			AnimLength,
-			false
-		);
+	if (const FAnimationListData* VictoryAnimationList = this -> FindAnimationsByName(FName("Victory"));
+		VictoryAnimationList != nullptr) {
+		const TArray<FAnimationData>& Montages = VictoryAnimationList -> Montages;
+		this -> PlayAnimationOf(Montages, -1, -1);
+	} else {
+		UE_LOG(LogTemp,
+			   Warning,
+			   TEXT("APlayerCharacter::Dodge: VictoryAttackAnimationList is nullptr!"));
 	}
 }
 
 void APlayerCharacter::Defeat() {
-	if (!this -> bIsAnimationPlaying) {
-		const auto [Montages] = this -> FindAnimationsByName(FName("Defeat"));
-		const float AnimLength = this -> PlayAnimationOf(Montages, -1, -1);
-		GetWorld() -> GetTimerManager().SetTimer(
-			this -> ResetComboTimer,
-			this,
-			&APlayerCharacter::ResetCombos,
-			AnimLength,
-			false
-		);
+	if (const FAnimationListData* DefeatAnimationList = this -> FindAnimationsByName(FName("Defeat"));
+		DefeatAnimationList != nullptr) {
+		const TArray<FAnimationData>& Montages = DefeatAnimationList -> Montages;
+		this -> PlayAnimationOf(Montages, -1, -1);
+	} else {
+		UE_LOG(LogTemp,
+			   Warning,
+			   TEXT("APlayerCharacter::Dodge: DefeatAnimationList is nullptr!"));
+	}
+
+	if (const FSoundListData* GettingHitSounds = this -> FindSoundsByName("GettingHit");
+		GettingHitSounds != nullptr) {
+		this -> PlaySoundOf(GettingHitSounds->Sounds, -1);
+	} else {
+		UE_LOG(LogTemp,
+		       Warning,
+		       TEXT("APlayerCharacter::TakeDamage: GettingHitSounds has no sound data."));
 	}
 }
 
-FAnimationListData APlayerCharacter::FindAnimationsByName(const FName Name) const {
+const FAnimationListData* APlayerCharacter::FindAnimationsByName(const FName Name) const {
 	if (const FAnimationListData* FoundAnimationData = this -> AnimationData.Find(Name);
 		FoundAnimationData != nullptr) {
-		return *FoundAnimationData;
+		return FoundAnimationData;
 	}
 
-	return FAnimationListData({});
+	return nullptr;
 }
 
-float APlayerCharacter::PlayAnimationOf(const TArray<FAnimationData>& Array, const int32 Index, const int32 AttackType) {
-	if (this -> bIsAnimationPlaying) {
-		return 0.0f;
+const FSoundListData* APlayerCharacter::FindSoundsByName(const FName Name) const {
+	if (const FSoundListData* FoundSoundData = this -> SoundData.Find(Name);
+		FoundSoundData != nullptr) {
+		return FoundSoundData;
 	}
+
+	return nullptr;
+}
+
+void APlayerCharacter::PlayAnimationOf(const TArray<FAnimationData>& Array, const int32 Index, const int32 AttackType) {
+	if (Array.Num() == 0) {
+		UE_LOG(LogTemp,
+			Warning,
+			TEXT("APlayerCharacter::PlayAnimationOf: Array contains no animation data."));
+
+		return;
+	}
+
+	this -> bIsAnimationPlaying = true;
 
 	if (Index != -1) {
 		const auto& [Montage, PlayRate] = Array[Index];
@@ -216,7 +297,7 @@ float APlayerCharacter::PlayAnimationOf(const TArray<FAnimationData>& Array, con
 			ChangedAttackIndex >= Array.Num()) {
 			switch (AttackType) {
 				case 0: {
-					this -> BasicAttackIndex = 0;
+					this -> NormalAttackIndex = 0;
 					break;
 				}
 
@@ -234,11 +315,10 @@ float APlayerCharacter::PlayAnimationOf(const TArray<FAnimationData>& Array, con
 					break;
 				}
 			}
-			return AnimLength;
 		} else {
 			switch (AttackType) {
 				case 0: {
-					this -> BasicAttackIndex = ChangedAttackIndex;
+					this -> NormalAttackIndex = ChangedAttackIndex;
 					break;
 				}
 
@@ -256,26 +336,109 @@ float APlayerCharacter::PlayAnimationOf(const TArray<FAnimationData>& Array, con
 					break;
 				}
 			}
-
-			return AnimLength;
 		}
+
+		GetWorld() -> GetTimerManager().SetTimer(
+			this -> AnimationCountdownTimerHandler,
+			this,
+			&APlayerCharacter::ResetAnimationPlayState,
+			AnimLength * this -> AnimationCutoffRate,
+			false
+		);
+
+		GetWorld() -> GetTimerManager().SetTimer(
+			this -> ResetComboTimerHandler,
+			this,
+			&APlayerCharacter::ResetCombos,
+			AnimLength,
+			false
+		);
+
+		return;
 	}
 
 	const int32 RandomIndex = FMath::RandRange(0, Array.Num() - 1);
 	const auto& [Montage, PlayRate] = Array[RandomIndex];
 	const float AnimLength = this -> GetMesh() -> GetAnimInstance() -> Montage_Play(Montage, PlayRate);
-	return AnimLength;
+
+	GetWorld() -> GetTimerManager().SetTimer(
+		this -> AnimationCountdownTimerHandler,
+		this,
+		&APlayerCharacter::ResetAnimationPlayState,
+		AnimLength * this -> AnimationCutoffRate,
+		false
+	);
+
+	GetWorld() -> GetTimerManager().SetTimer(
+		this -> ResetComboTimerHandler,
+		this,
+		&APlayerCharacter::ResetCombos,
+		AnimLength,
+		false
+	);
+}
+
+void APlayerCharacter::PlaySoundOf(const TArray<FSoundData>& Array, const int32 Index) const {
+	if (Array.Num() == 0) {
+		UE_LOG(LogTemp,
+			Warning,
+			TEXT("APlayerCharacter::PlaySoundOf: Array contains no sound data."));
+
+		return;
+	}
+
+	if (Index != -1) {
+		const auto& [Sound, MinVolume, MaxVolume, MinPitch, MaxPitch] = Array[Index];
+		const float Volume = FMath::RandRange(MinVolume, MaxVolume);
+		const float Pitch = FMath::RandRange(MinPitch, MaxPitch);
+		UGameplayStatics::PlaySound2D(GetWorld(), Sound, Volume, Pitch);
+		return;
+	}
+
+	const int32 RandomIndex = FMath::RandRange(0, Array.Num() - 1);
+	const auto& [Sound, MinVolume, MaxVolume, MinPitch, MaxPitch] = Array[RandomIndex];
+	const float Volume = FMath::RandRange(MinVolume, MaxVolume);
+	const float Pitch = FMath::RandRange(MinPitch, MaxPitch);
+	UGameplayStatics::PlaySound2D(GetWorld(), Sound, Volume, Pitch);
 }
 
 void APlayerCharacter::ResetCombos() {
-	this -> BasicAttackIndex = 0;
+	this -> NormalAttackIndex = 0;
 	this -> HeavyAttackIndex = 0;
 	this -> SkillAttackIndex = 0;
+}
+
+void APlayerCharacter::ResetAnimationPlayState() {
 	this -> bIsAnimationPlaying = false;
 }
 
 void APlayerCharacter::Die() {
+	if (this -> bDidTheCharacterDie) {
+		return;
+	}
 
+	this -> bDidTheCharacterDie = true;
+
+	if (APlayerController* PlayerController = Cast<APlayerController>(GetController());
+		PlayerController != nullptr) {
+		PlayerController -> DisableInput(PlayerController);
+	} else {
+		UE_LOG(LogTemp,
+		       Warning,
+		       TEXT("APlayerCharacter::Die: Tried to disable input due to death but PlayerController reference was null!"));
+	}
+
+	if (const FSoundListData* FinishHimSounds = this -> FindSoundsByName("FinishHim");
+		FinishHimSounds != nullptr) {
+		this -> PlaySoundOf(FinishHimSounds -> Sounds, -1);
+		this -> bDidTheCharacterDie = true;
+	} else {
+		UE_LOG(LogTemp,
+			   Warning,
+			   TEXT("APlayerCharacter::Die: FinishHimSounds has no sound data."));
+	}
+
+	this -> OnDeath.Broadcast(this -> PlayerIndex);
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) {

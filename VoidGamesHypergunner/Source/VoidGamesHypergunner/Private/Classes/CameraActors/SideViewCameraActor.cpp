@@ -1,5 +1,6 @@
 ﻿#include "Classes/CameraActors/SideViewCameraActor.h"
 
+#include "Classes/Characters/PlayerCharacter.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
@@ -7,6 +8,29 @@
 
 ASideViewCameraActor::ASideViewCameraActor() {
 	PrimaryActorTick.bCanEverTick = true;
+}
+
+void ASideViewCameraActor::HandleOnDeath(const int32 PlayerIndex) {
+	switch (PlayerIndex) {
+		case 0: {
+			this -> EndGamePositionOffset.X *= -1;
+			this -> EndGameRotationOffset.Yaw *= -1;
+			break;
+		}
+
+		case 1:
+		default: {
+			break;
+		}
+	}
+
+	this -> StartEndGameLocation = GetActorLocation();
+	this -> StartEndGameRotation = GetActorRotation();
+	this -> TargetEndGameLocation = this -> StartEndGameLocation + this -> EndGamePositionOffset;
+	this -> TargetEndGameRotation = this -> StartEndGameRotation + this -> EndGameRotationOffset;
+	this -> bShouldRepositionForEnd = true;
+	this -> ZoomToPlayerIndex = PlayerIndex;
+	this -> EndGameCurrentRepositioningTime = 0.0f;
 }
 
 void ASideViewCameraActor::BeginPlay() {
@@ -25,6 +49,38 @@ void ASideViewCameraActor::BeginPlay() {
 
 void ASideViewCameraActor::Tick(const float DeltaTime) {
 	Super::Tick(DeltaTime);
+
+	if (this -> bDidRepositioningEnded) {
+		PrimaryActorTick.bCanEverTick = false;
+		return;
+	}
+
+	if (this -> bShouldRepositionForEnd) {
+		if (FMath::IsNearlyEqual(this -> EndGameCurrentRepositioningTime, this -> EndGameRepositionAnimationTime, 0.001f)) {
+			this -> bDidRepositioningEnded = true;
+			this -> EndGameCurrentRepositioningTime = this -> EndGameRepositionAnimationTime;
+			SetActorLocation(this -> TargetEndGameLocation);
+			SetActorRotation(this -> TargetEndGameRotation);
+			return;
+		}
+
+		this -> EndGameCurrentRepositioningTime += DeltaTime;
+		const float RawAlpha = this -> EndGameCurrentRepositioningTime / this -> EndGameRepositionAnimationTime;
+		const float Alpha = FMath::Clamp(FMath::InterpEaseInOut(0.0f, 1.0f, RawAlpha, this -> CameraSmoothingSpeed), 0.0f, 1.0f);
+		const FVector NewLocation = FMath::Lerp(this -> StartEndGameLocation, this -> TargetEndGameLocation, Alpha);
+		const FRotator NewRotation = FMath::Lerp(this -> StartEndGameRotation, this -> TargetEndGameRotation, Alpha);
+		SetActorLocation(NewLocation);
+		SetActorRotation(NewRotation);
+
+
+		if (FMath::IsNearlyEqual(Alpha, 1.0f)) {
+			this -> bDidRepositioningEnded = true;
+			this -> EndGameCurrentRepositioningTime = this -> EndGameRepositionAnimationTime;
+			SetActorLocation(this -> TargetEndGameLocation);
+			SetActorRotation(this -> TargetEndGameRotation);
+		}
+		return;
+	}
 
 	this -> SavePlayerCurrentLocations();
 	const FVector NewLocation = this -> CalculateNewTickLocation(DeltaTime);
@@ -50,12 +106,14 @@ void ASideViewCameraActor::SavePlayerReferences() {
 		bool Player1Exists = false;
 		if (ACharacter* Player1Character = UGameplayStatics::GetPlayerCharacter(CurrentWorld, 0)) {
 			this -> Player1CharacterReference = Player1Character;
+			Cast<APlayerCharacter>(this -> Player1CharacterReference) -> OnDeath.AddDynamic(this, &ASideViewCameraActor::HandleOnDeath);
 			Player1Exists = true;
 		}
 
 		bool Player2Exists = false;
 		if (ACharacter* Player2Character = UGameplayStatics::GetPlayerCharacter(CurrentWorld, 1)) {
 			this -> Player2CharacterReference = Player2Character;
+			Cast<APlayerCharacter>(this -> Player2CharacterReference) -> OnDeath.AddDynamic(this, &ASideViewCameraActor::HandleOnDeath);
 			Player2Exists = true;
 		}
 

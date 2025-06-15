@@ -67,6 +67,7 @@ void UInGameWidget::SetupPlayerListeners(const TArray<AActor*>& Players) {
 	for (APlayerCharacter* Player : this -> TrackedPlayers) {
 		if (Player != nullptr) {
 			Player -> OnHealthChanged.AddDynamic(this, &UInGameWidget::HandleHealthChanged);
+			Player -> OnDeath.AddDynamic(this, &UInGameWidget::HandleDeath);
 		}
 	}
 }
@@ -78,6 +79,16 @@ void UInGameWidget::HandleHealthChanged(const int32 PlayerIndex) {
 			this -> UpdateHealthFor(Player, bIsLeftPlayer);
 			return;
 		}
+	}
+}
+
+void UInGameWidget::HandleDeath(int32 PlayerIndex) {
+	if (this -> FadeOutAnimation != nullptr) {
+		PlayAnimation(this -> FadeOutAnimation);
+	} else {
+		UE_LOG(LogTemp,
+		       Warning,
+		       TEXT("UInGameWidget::HandleDeath: FadeOutAnimation is nullptr!"));
 	}
 }
 
@@ -142,7 +153,9 @@ void UInGameWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime) {
 			this -> bIsUpdatingRightHealthBar = false;
 		} else {
 			this -> AnimTimeForHealthBarR += InDeltaTime;
-			float Alpha = FMath::Clamp(this -> AnimTimeForHealthBarR / this -> HealthBarUpdateAnimationTime, 0.0f, 1.0f);
+			const float RawAlpha = this -> AnimTimeForHealthBarR / this -> HealthBarUpdateAnimationTime;
+			const float Alpha = FMath::Clamp(FMath::InterpEaseInOut(0.0f, 1.0f, RawAlpha, this -> AnimationInterpolationSpeed), 0.0f, 1.0f);
+
 			const float DisplayedPercentageForR = this -> HealthBarR -> GetPercent();
 			const float NewBarPercentValue = FMath::Lerp(DisplayedPercentageForR, this -> TargetHealthForBarR, Alpha);
 			this -> HealthBarR -> SetPercent(NewBarPercentValue);

@@ -9,6 +9,7 @@
 #include "Interfaces/HealthComponentContainable.h"
 
 #include "Structs/AnimationListData.h"
+#include "Structs/SoundListData.h"
 
 #include "PlayerCharacter.generated.h"
 
@@ -20,6 +21,7 @@ class UHealthComponent;
 class UBoxComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChangedSignature, int32, PlayerIndex);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeathSignature, int32, PlayerIndex);
 
 UCLASS()
 class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter, public IHealthComponentContainable {
@@ -57,11 +59,14 @@ class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter, public IHea
 		void Victory();
 		void Defeat();
 
-		UFUNCTION(BlueprintCallable)
-		FAnimationListData FindAnimationsByName(const FName Name) const;
+		const FAnimationListData* FindAnimationsByName(const FName Name) const;
+		const FSoundListData* FindSoundsByName(const FName Name) const;
 
-		float PlayAnimationOf(const TArray<FAnimationData>& Array, const int32 Index, const int32 AttackType);
+		void PlayAnimationOf(const TArray<FAnimationData>& Array, const int32 Index, const int32 AttackType);
+		void PlaySoundOf(const TArray<FSoundData>& Array, const int32 Index) const;
+
 		void ResetCombos();
+		void ResetAnimationPlayState();
 		void Die();
 
 		virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
@@ -70,6 +75,9 @@ class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter, public IHea
 		UPROPERTY()
 		FOnHealthChangedSignature OnHealthChanged = {};
 
+		UPROPERTY()
+		FOnDeathSignature OnDeath = {};
+
 	protected:
 		UPROPERTY(EditAnywhere, Category = "Custom|Input")
 		UInputMappingContext* InputMappingContext = nullptr;
@@ -77,8 +85,11 @@ class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter, public IHea
 		UPROPERTY(EditAnywhere, Category = "Custom|Input")
 		TArray<FInputBindingData> InputBindingData = {};
 
-		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Custom|Animation")
+		UPROPERTY(EditAnywhere, Category = "Custom|Animation")
 		TMap<FName, FAnimationListData> AnimationData = {};
+
+		UPROPERTY(EditAnywhere, Category = "Custom|Sound")
+		TMap<FName, FSoundListData> SoundData = {};
 
 		UPROPERTY(EditAnywhere, Category = "Custom|Movement|BackwardsSpeedMultiplier")
 		float BackwardsMovementSpeedMultiplier = 0.6f;
@@ -96,8 +107,14 @@ class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter, public IHea
 
 	private:
 		bool bIsAnimationPlaying = false;
-		int32 BasicAttackIndex = 0;
+		bool bDidTheCharacterDie = false;
+		bool bDidFinishHimTriggered = false;
+
+		int32 NormalAttackIndex = 0;
 		int32 HeavyAttackIndex = 0;
 		int32 SkillAttackIndex = 0;
-		FTimerHandle ResetComboTimer = {};
+
+		float AnimationCutoffRate = 0.5f;
+		FTimerHandle AnimationCountdownTimerHandler = {};
+		FTimerHandle ResetComboTimerHandler = {};
 };

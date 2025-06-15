@@ -2,6 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "Camera/CameraActor.h"
+
+#include "Classes/Characters/PlayerCharacter.h"
+
 #include "SideViewCameraActor.generated.h"
 
 class ACharacter;
@@ -12,6 +15,9 @@ class VOIDGAMESHYPERGUNNER_API ASideViewCameraActor : public ACameraActor {
 
 	public:
 		ASideViewCameraActor();
+
+		UFUNCTION()
+		void HandleOnDeath(const int32 PlayerIndex);
 
 	protected:
 		virtual void BeginPlay() override;
@@ -33,6 +39,15 @@ class VOIDGAMESHYPERGUNNER_API ASideViewCameraActor : public ACameraActor {
 		UPROPERTY(EditAnywhere, Category = "Custom|Settings")
 		float CameraSmoothingSpeed = 3.0f;
 
+		UPROPERTY(EditAnywhere, Category = "Custom|Settings")
+		FVector EndGamePositionOffset = FVector::ZeroVector;
+
+		UPROPERTY(EditAnywhere, Category = "Custom|Settings")
+		FRotator EndGameRotationOffset = FRotator::ZeroRotator;
+
+		UPROPERTY(EditAnywhere, Category = "Custom|Settings")
+		float EndGameRepositionAnimationTime = 1.0f;
+
 	private:
 		FVector DefaultWorldLocation = FVector::ZeroVector;
 
@@ -44,4 +59,14 @@ class VOIDGAMESHYPERGUNNER_API ASideViewCameraActor : public ACameraActor {
 
 		FVector Player1WorldLocation = FVector::ZeroVector;
 		FVector Player2WorldLocation = FVector::ZeroVector;
+
+		bool bShouldRepositionForEnd = false;
+		bool bDidRepositioningEnded = false;
+		int32 ZoomToPlayerIndex = -1;
+
+		FVector StartEndGameLocation = FVector::ZeroVector;
+		FRotator StartEndGameRotation = FRotator::ZeroRotator;
+		FVector TargetEndGameLocation = FVector::ZeroVector;
+		FRotator TargetEndGameRotation = FRotator::ZeroRotator;
+		float EndGameCurrentRepositioningTime = 0.0f;
 };
