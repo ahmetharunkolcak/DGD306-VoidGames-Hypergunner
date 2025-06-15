@@ -153,7 +153,6 @@ void APlayerCharacter::PossessedBy(AController* NewController) {
 }
 
 void APlayerCharacter::Move(const FInputActionValue& Value) {
-	UE_LOG(LogTemp, Warning, TEXT("Move called -> bDidTheCharacterDie: %d, bShouldBlockInput: %d"), bDidTheCharacterDie, bShouldBlockInput);
 	if (this -> bDidTheCharacterDie || this -> bShouldBlockInput) {
 		return;
 	}

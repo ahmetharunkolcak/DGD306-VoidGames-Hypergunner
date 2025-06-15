@@ -70,7 +70,7 @@ void AMainHUD::BeginPlay() {
 	if (this -> InGameWidgetInstance == nullptr) {
 		UE_LOG(LogTemp,
 			   Warning,
-			   TEXT("AMainHUD::BeginPlay: Failed to created InGameStatusWidget instance with the given class!"));
+			   TEXT("AMainHUD::BeginPlay: Failed to create InGameStatusWidget instance with the given class!"));
 
 		this -> bIsTimeObtainableFromGameMode = false;
 		return;

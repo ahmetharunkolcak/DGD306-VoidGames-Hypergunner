@@ -141,6 +141,10 @@ void UInGameWidget::NativeConstruct() {
 
 	if (this -> ReturnToMainMenuButton != nullptr) {
 		this -> ReturnToMainMenuButton -> OnClicked.AddDynamic(this, &UInGameWidget::OnReturnToMainMenuClicked);
+	} else {
+		UE_LOG(LogTemp,
+			Warning,
+			TEXT("UInGameWidget::NativeConstruct: Tried to add a click event to ReturnToMainMenu button but it was null!"));
 	}
 
 	TArray<AActor*> PlayerCharacters = {};
@@ -166,6 +170,7 @@ void UInGameWidget::NativeConstruct() {
 					this -> CachedCurrentHealthForBarL = CharacterCurrentHealth;
 					this -> TargetCurrentHealthForBarL = CharacterCurrentHealth;
 					this -> TargetMaximumHealthForBarL = CharacterMaximumHealth;
+					break;
 				}
 
 				case 1: {
@@ -180,6 +185,7 @@ void UInGameWidget::NativeConstruct() {
 					this -> CachedCurrentHealthForBarR = CharacterCurrentHealth;
 					this -> TargetCurrentHealthForBarR = CharacterCurrentHealth;
 					this -> TargetMaximumHealthForBarR = CharacterMaximumHealth;
+					break;
 				}
 
 				default: {
@@ -236,6 +242,7 @@ void UInGameWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime) {
 		if (FMath::IsNearlyEqual(this -> AnimTimeForHealthBarL, this -> HealthBarUpdateAnimationTime, 0.001f)) {
 			this -> HealthBarL -> SetPercent(this -> TargetHealthForBarL);
 			this -> LastCurrentHealthForBarL = this -> TargetCurrentHealthForBarL;
+			this -> CachedCurrentHealthForBarL = this -> LastCurrentHealthForBarL;
 			const FString HealthText = FString::Printf(TEXT("%d / %d"),
 			                                           FMath::RoundToInt(this -> TargetCurrentHealthForBarL),
 			                                           FMath::RoundToInt(this -> TargetMaximumHealthForBarL));
@@ -259,6 +266,7 @@ void UInGameWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime) {
 			if (FMath::IsNearlyEqual(Alpha, 1.0f)) {
 				this -> HealthBarL -> SetPercent(this -> TargetHealthForBarL);
 				this -> LastCurrentHealthForBarL = this -> TargetCurrentHealthForBarL;
+				this -> CachedCurrentHealthForBarL = this -> LastCurrentHealthForBarL;
 				HealthText = FString::Printf(TEXT("%d / %d"),
 											 FMath::RoundToInt(this -> TargetCurrentHealthForBarL),
 											 FMath::RoundToInt(this -> TargetMaximumHealthForBarL));
@@ -274,9 +282,10 @@ void UInGameWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime) {
 		if (FMath::IsNearlyEqual(this -> AnimTimeForHealthBarR, this -> HealthBarUpdateAnimationTime, 0.001f)) {
 			this -> HealthBarR -> SetPercent(this -> TargetHealthForBarR);
 			this -> LastCurrentHealthForBarR = this -> TargetCurrentHealthForBarR;
+			this -> CachedCurrentHealthForBarR = this -> LastCurrentHealthForBarR;
 			const FString HealthText = FString::Printf(TEXT("%d \\ %d"),
-													   FMath::RoundToInt(this -> TargetCurrentHealthForBarR),
-													   FMath::RoundToInt(this -> TargetMaximumHealthForBarR));
+			                                           FMath::RoundToInt(this -> TargetCurrentHealthForBarR),
+			                                           FMath::RoundToInt(this -> TargetMaximumHealthForBarR));
 			this -> HealthValueR -> SetText(FText::FromString(HealthText));
 			this -> AnimTimeForHealthBarR = this -> HealthBarUpdateAnimationTime;
 			this -> bIsUpdatingRightHealthBar = false;
@@ -297,6 +306,7 @@ void UInGameWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime) {
 			if (FMath::IsNearlyEqual(Alpha, 1.0f)) {
 				this -> HealthBarR -> SetPercent(this -> TargetHealthForBarR);
 				this -> LastCurrentHealthForBarR = this -> TargetCurrentHealthForBarR;
+				this -> CachedCurrentHealthForBarR = this -> LastCurrentHealthForBarR;
 				HealthText = FString::Printf(TEXT("%d \\ %d"),
 											 FMath::RoundToInt(this -> TargetCurrentHealthForBarR),
 											 FMath::RoundToInt(this -> TargetMaximumHealthForBarR));
