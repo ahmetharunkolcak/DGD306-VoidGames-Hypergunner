@@ -1,8 +1,8 @@
-﻿#include "Classes/AnimNotifies/UHitAnimNotify.h"
+﻿#include "Classes/AnimNotifies/HitAnimNotify.h"
 
 #include "Classes/Characters/PlayerCharacter.h"
 
-void UUHitAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) {
+void UHitAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) {
 	Super::Notify(MeshComp, Animation, EventReference);
 
 	if (MeshComp == nullptr) {

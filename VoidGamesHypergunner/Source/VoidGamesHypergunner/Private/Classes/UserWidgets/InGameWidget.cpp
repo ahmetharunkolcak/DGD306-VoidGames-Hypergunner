@@ -1,10 +1,12 @@
 ﻿#include "Classes/UserWidgets/InGameWidget.h"
 
 #include "Classes/Characters/PlayerCharacter.h"
+#include "Components/Button.h"
 #include "Components/Image.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Interfaces/HealthComponentContainable.h"
+#include "Kismet/GameplayStatics.h"
 
 void UInGameWidget::SetTimer(const float Time) const {
 	if (this -> TimeValue != nullptr) {
@@ -103,6 +105,88 @@ void UInGameWidget::HandleDeath(int32 PlayerIndex) {
 		UE_LOG(LogTemp,
 		       Warning,
 		       TEXT("UInGameWidget::HandleDeath: FadeOutAnimation is nullptr!"));
+	}
+}
+
+void UInGameWidget::OnRematchClicked() {
+	if (UGameInstance* GameInstance = GetGameInstance()) {
+        for (int32 i = GameInstance -> GetNumLocalPlayers() - 1; i > 0; --i) {
+            ULocalPlayer* LocalPlayer = GameInstance -> GetLocalPlayerByIndex(i);
+            GameInstance -> RemoveLocalPlayer(LocalPlayer);
+        }
+    }
+	UGameplayStatics::OpenLevel(GetWorld(), FName("MainLevel"), true);
+}
+
+void UInGameWidget::OnReturnToMainMenuClicked() {
+	if (UGameInstance* GameInstance = GetGameInstance()) {
+		for (int32 i = GameInstance -> GetNumLocalPlayers() - 1; i > 0; --i) {
+			ULocalPlayer* LocalPlayer = GameInstance -> GetLocalPlayerByIndex(i);
+			GameInstance -> RemoveLocalPlayer(LocalPlayer);
+		}
+	}
+	UGameplayStatics::OpenLevel(GetWorld(), FName("MainMenu"), true);
+}
+
+void UInGameWidget::NativeConstruct() {
+	Super::NativeConstruct();
+
+	if (this -> RematchButton != nullptr) {
+		this -> RematchButton -> OnClicked.AddDynamic(this, &UInGameWidget::OnRematchClicked);
+	} else {
+		UE_LOG(LogTemp,
+			Warning,
+			TEXT("UInGameWidget::NativeConstruct: Tried to add a click event to Rematch button but it was null!"));
+	}
+
+	if (this -> ReturnToMainMenuButton != nullptr) {
+		this -> ReturnToMainMenuButton -> OnClicked.AddDynamic(this, &UInGameWidget::OnReturnToMainMenuClicked);
+	}
+
+	TArray<AActor*> PlayerCharacters = {};
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerCharacter::StaticClass(), PlayerCharacters);
+	for (AActor* Actor : PlayerCharacters) {
+		if (APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(Actor);
+			PlayerCharacter -> Implements<UHealthComponentContainable>()) {
+			const IHealthComponentContainable* HealthComponentContainableInterface = Cast<IHealthComponentContainable>(PlayerCharacter);
+			const float CharacterHealthRate = HealthComponentContainableInterface -> GetCharacterHealthRate();
+			const float CharacterCurrentHealth = HealthComponentContainableInterface -> GetCharacterCurrentHealth();
+			const float CharacterMaximumHealth = HealthComponentContainableInterface -> GetCharacterMaximumHealth();
+
+			switch (PlayerCharacter -> GetPlayerIndex()) {
+				case 0: {
+					this -> HealthBarL -> SetPercent(CharacterHealthRate);
+					const FString HealthText = FString::Printf(TEXT("%d / %d"),
+													   FMath::RoundToInt(CharacterCurrentHealth),
+													   FMath::RoundToInt(CharacterMaximumHealth));
+					this -> HealthValueL -> SetText(FText::FromString(HealthText));
+
+					this -> TargetHealthForBarL = CharacterHealthRate;
+					this -> LastCurrentHealthForBarL = CharacterCurrentHealth;
+					this -> CachedCurrentHealthForBarL = CharacterCurrentHealth;
+					this -> TargetCurrentHealthForBarL = CharacterCurrentHealth;
+					this -> TargetMaximumHealthForBarL = CharacterMaximumHealth;
+				}
+
+				case 1: {
+					this -> HealthBarR -> SetPercent(CharacterHealthRate);
+					const FString HealthText = FString::Printf(TEXT("%d \\ %d"),
+													   FMath::RoundToInt(CharacterCurrentHealth),
+													   FMath::RoundToInt(CharacterMaximumHealth));
+					this -> HealthValueR -> SetText(FText::FromString(HealthText));
+
+					this -> TargetHealthForBarR = CharacterHealthRate;
+					this -> LastCurrentHealthForBarR = CharacterCurrentHealth;
+					this -> CachedCurrentHealthForBarR = CharacterCurrentHealth;
+					this -> TargetCurrentHealthForBarR = CharacterCurrentHealth;
+					this -> TargetMaximumHealthForBarR = CharacterMaximumHealth;
+				}
+
+				default: {
+					break;
+				}
+			}
+		}
 	}
 }
 

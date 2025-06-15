@@ -15,6 +15,7 @@ APlayerCharacter::APlayerCharacter() {
 	this -> HealthComponent = CreateDefaultSubobject<UHealthComponent>(FName("Health Component"));
 }
 
+
 float APlayerCharacter::GetCharacterHealthRate() const {
 	const float CurHealth = this -> HealthComponent -> GetCurrentHealth();
 	const float MaxHealth = this -> HealthComponent -> GetMaximumHealth();
@@ -116,17 +117,6 @@ float APlayerCharacter::TakeDamage(const float Damage, const FDamageEvent& Damag
 			       Warning,
 			       TEXT("APlayerCharacter::TakeDamage: GettingHitSounds has no sound data."));
 		}
-
-		if (this -> bDidTheCharacterDie) {
-			if (const FSoundListData* GettingHitFinisherSounds = this -> FindSoundsByName("GettingHitFinisher");
-				GettingHitFinisherSounds != nullptr) {
-				this -> PlaySoundOf(GettingHitFinisherSounds -> Sounds, -1);
-			} else {
-				UE_LOG(LogTemp,
-					   Warning,
-					   TEXT("APlayerCharacter::TakeDamage: GettingHitFinisherSounds has no sound data."));
-			}
-		}
 	}
 
 	return ActualDamage;
@@ -163,6 +153,7 @@ void APlayerCharacter::PossessedBy(AController* NewController) {
 }
 
 void APlayerCharacter::Move(const FInputActionValue& Value) {
+	UE_LOG(LogTemp, Warning, TEXT("Move called -> bDidTheCharacterDie: %d, bShouldBlockInput: %d"), bDidTheCharacterDie, bShouldBlockInput);
 	if (this -> bDidTheCharacterDie || this -> bShouldBlockInput) {
 		return;
 	}

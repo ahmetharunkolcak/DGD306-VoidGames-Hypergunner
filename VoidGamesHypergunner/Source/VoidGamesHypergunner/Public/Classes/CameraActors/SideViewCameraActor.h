@@ -69,4 +69,7 @@ class VOIDGAMESHYPERGUNNER_API ASideViewCameraActor : public ACameraActor {
 		FVector TargetEndGameLocation = FVector::ZeroVector;
 		FRotator TargetEndGameRotation = FRotator::ZeroRotator;
 		float EndGameCurrentRepositioningTime = 0.0f;
+
+		bool bIsTickValid = false;
+		int32 TickCount = 0;
 };

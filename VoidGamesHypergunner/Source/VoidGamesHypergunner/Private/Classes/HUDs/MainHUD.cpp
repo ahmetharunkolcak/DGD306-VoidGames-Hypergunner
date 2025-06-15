@@ -15,8 +15,33 @@ void AMainHUD::SetInGameCharacterImage(UTexture2D* ImageToSet, const bool bIsFor
 	this -> CachedCharacterData.Add(bIsForLeftPlayer, ImageToSet);
 }
 
+void AMainHUD::TriggerReturnScreen() {
+	if (UGameplayStatics::SetGamePaused(GetWorld(), true)) {
+		UInGameWidget* InGameWidget = Cast<UInGameWidget>(this -> InGameWidgetInstance);
+		InGameWidget -> SetIsFocusable(true);
+
+		if (APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+			PlayerController != nullptr) {
+			FInputModeUIOnly InputMode;
+			InputMode.SetWidgetToFocus(InGameWidget -> TakeWidget());
+			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+			PlayerController -> SetInputMode(InputMode);
+			PlayerController -> bShowMouseCursor = true;
+		}
+
+		InGameWidget -> PlayAnimation(InGameWidget -> GetTriggerButtonScreenAnimation());
+	}
+}
+
 void AMainHUD::BeginPlay() {
 	Super::BeginPlay();
+
+	if (APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+		PlayerController != nullptr) {
+		FInputModeGameOnly InputMode;
+		PlayerController -> SetInputMode(InputMode);
+		PlayerController -> bShowMouseCursor = false;
+	}
 
 	if (this -> InGameStatusWidget == nullptr) {
 		UE_LOG(LogTemp,
@@ -37,12 +62,12 @@ void AMainHUD::BeginPlay() {
 		return;
 	}
 
-	UUserWidget* InGameStatusWidgetInstance = CreateWidget<UUserWidget>(CurrentWorld, this -> InGameStatusWidget);
+	this -> InGameWidgetInstance = CreateWidget<UUserWidget>(CurrentWorld, this -> InGameStatusWidget);
 	TArray<AActor*> SpawnedCharacters;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerCharacter::StaticClass(), SpawnedCharacters);
-	Cast<UInGameWidget>(InGameStatusWidgetInstance) -> SetupPlayerListeners(SpawnedCharacters);
+	Cast<UInGameWidget>(this -> InGameWidgetInstance) -> SetupPlayerListeners(SpawnedCharacters);
 
-	if (InGameStatusWidgetInstance == nullptr) {
+	if (this -> InGameWidgetInstance == nullptr) {
 		UE_LOG(LogTemp,
 			   Warning,
 			   TEXT("AMainHUD::BeginPlay: Failed to created InGameStatusWidget instance with the given class!"));
@@ -70,7 +95,7 @@ void AMainHUD::BeginPlay() {
 		return;
 	}
 
-	if (!InGameStatusWidgetInstance -> Implements<UVisualContainable>()) {
+	if (!this -> InGameWidgetInstance -> Implements<UVisualContainable>()) {
 		UE_LOG(LogTemp,
 			   Warning,
 			   TEXT("AMainHUD::BeginPlay: InGameStatusWidget does not implement IVisualContainable interface!"));
@@ -82,14 +107,14 @@ void AMainHUD::BeginPlay() {
 	this -> TimerContainableInterfaceOfGameMode = CurrentGameMode;
 	const float GameTime = this -> TimerContainableInterfaceOfGameMode -> GetGameplayTime(false);
 
-	this -> VisualContainableInterfaceOfInGameStatusWidget = InGameStatusWidgetInstance;
+	this -> VisualContainableInterfaceOfInGameStatusWidget = this -> InGameWidgetInstance;
 	this -> VisualContainableInterfaceOfInGameStatusWidget -> SetTimer(GameTime);
 
 	this -> ApplyCharacterImages();
 
 	this -> bIsTimeObtainableFromGameMode = true;
 
-	InGameStatusWidgetInstance -> AddToViewport();
+	this -> InGameWidgetInstance -> AddToViewport();
 }
 
 void AMainHUD::Tick(const float DeltaSeconds) {

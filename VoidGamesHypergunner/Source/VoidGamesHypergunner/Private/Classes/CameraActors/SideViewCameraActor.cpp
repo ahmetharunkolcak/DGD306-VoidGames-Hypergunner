@@ -1,4 +1,4 @@
-﻿#include "Classes/CameraActors/SideViewCameraActor.h"
+#include "Classes/CameraActors/SideViewCameraActor.h"
 
 #include "Classes/Characters/PlayerCharacter.h"
 #include "GameFramework/PlayerController.h"
@@ -42,8 +42,8 @@ void ASideViewCameraActor::BeginPlay() {
 
 	if (const UWorld* CurrentWorld = GetWorld()) {
 		FTimerManager& WorldTimerManager = CurrentWorld -> GetTimerManager();
-		WorldTimerManager.SetTimerForNextTick(this, &ASideViewCameraActor::SetSideViewCamera);
 		WorldTimerManager.SetTimerForNextTick(this, &ASideViewCameraActor::SavePlayerReferences);
+		WorldTimerManager.SetTimerForNextTick(this, &ASideViewCameraActor::SetSideViewCamera);
 	}
 }
 
@@ -103,21 +103,46 @@ void ASideViewCameraActor::SaveInitialWorldLocation() {
 
 void ASideViewCameraActor::SavePlayerReferences() {
 	if (const UWorld* CurrentWorld = GetWorld()) {
+		TArray<AActor*> PlayerCharacters = {};
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerCharacter::StaticClass(), PlayerCharacters);
 		bool Player1Exists = false;
-		if (ACharacter* Player1Character = UGameplayStatics::GetPlayerCharacter(CurrentWorld, 0)) {
-			this -> Player1CharacterReference = Player1Character;
-			Cast<APlayerCharacter>(this -> Player1CharacterReference) -> OnDeath.AddDynamic(this, &ASideViewCameraActor::HandleOnDeath);
-			Player1Exists = true;
-		}
-
 		bool Player2Exists = false;
-		if (ACharacter* Player2Character = UGameplayStatics::GetPlayerCharacter(CurrentWorld, 1)) {
-			this -> Player2CharacterReference = Player2Character;
-			Cast<APlayerCharacter>(this -> Player2CharacterReference) -> OnDeath.AddDynamic(this, &ASideViewCameraActor::HandleOnDeath);
-			Player2Exists = true;
+		for (AActor* PlayerActor : PlayerCharacters) {
+			if (APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(PlayerActor);
+				PlayerCharacter != nullptr) {
+				if (!PlayerCharacter -> OnDeath.IsAlreadyBound(this, &ASideViewCameraActor::HandleOnDeath)) {
+					PlayerCharacter -> OnDeath.AddDynamic(this, &ASideViewCameraActor::HandleOnDeath);
+				}
+
+				switch (PlayerCharacter -> GetPlayerIndex()) {
+					case 0: {
+						this -> Player1CharacterReference = PlayerCharacter;
+						Player1Exists = true;
+						break;
+					}
+
+					case 1: {
+						this -> Player2CharacterReference = PlayerCharacter;
+						Player2Exists = true;
+						break;
+					}
+
+					default: {
+						break;
+					}
+				}
+			}
 		}
 
 		const bool ArePlayersValid = Player1Exists && Player2Exists;
+		if (!ArePlayersValid) {
+			FTimerManager& WorldTimerManager = CurrentWorld -> GetTimerManager();
+
+			WorldTimerManager.SetTimerForNextTick(this, &ASideViewCameraActor::SavePlayerReferences);
+			if (!Player1Exists) {
+				WorldTimerManager.SetTimerForNextTick(this, &ASideViewCameraActor::SetSideViewCamera);
+			}
+		}
 		SetActorTickEnabled(ArePlayersValid);
 	}
 }

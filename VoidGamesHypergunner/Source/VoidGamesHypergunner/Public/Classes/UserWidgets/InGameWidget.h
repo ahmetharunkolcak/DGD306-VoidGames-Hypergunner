@@ -8,6 +8,7 @@
 class UProgressBar;
 class UTextBlock;
 class UImage;
+class UButton;
 class APlayerCharacter;
 
 UCLASS()
@@ -27,6 +28,17 @@ class VOIDGAMESHYPERGUNNER_API UInGameWidget : public UUserWidget, public IVisua
 
 		UFUNCTION()
 		void HandleDeath(int32 PlayerIndex);
+
+		UFUNCTION()
+		void OnRematchClicked();
+
+		UFUNCTION()
+		void OnReturnToMainMenuClicked();
+
+		FORCEINLINE UWidgetAnimation* GetTriggerButtonScreenAnimation() const { return this -> TriggerButtonScreen; }
+
+	protected:
+		virtual void NativeConstruct() override;
 
 	protected:
 		virtual FText GetFormattedTime(float Time) const;
@@ -53,8 +65,17 @@ class VOIDGAMESHYPERGUNNER_API UInGameWidget : public UUserWidget, public IVisua
 		UPROPERTY(meta = (BindWidget))
 		UImage* ImageR = nullptr;
 
+		UPROPERTY(meta = (BindWidget))
+		UButton* RematchButton = nullptr;
+
+		UPROPERTY(meta = (BindWidget))
+		UButton* ReturnToMainMenuButton = nullptr;
+
 		UPROPERTY(meta = (BindWidgetAnim), Transient)
 		UWidgetAnimation* SwitchToFinishScreen = nullptr;
+
+		UPROPERTY(meta = (BindWidgetAnim), Transient)
+		UWidgetAnimation* TriggerButtonScreen = nullptr;
 
 		UPROPERTY()
 		TArray<APlayerCharacter*> TrackedPlayers;

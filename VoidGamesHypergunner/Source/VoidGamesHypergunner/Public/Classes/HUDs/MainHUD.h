@@ -11,6 +11,8 @@
 
 #include "MainHUD.generated.h"
 
+class UUserWidget;
+
 UCLASS()
 class VOIDGAMESHYPERGUNNER_API AMainHUD : public AHUD, public IWidgetContainable {
 	GENERATED_BODY()
@@ -19,6 +21,7 @@ class VOIDGAMESHYPERGUNNER_API AMainHUD : public AHUD, public IWidgetContainable
 		AMainHUD();
 
 		virtual void SetInGameCharacterImage(UTexture2D* ImageToSet, const bool bIsForLeftPlayer) override;
+		virtual void TriggerReturnScreen();
 
 	protected:
 		virtual void BeginPlay() override;
@@ -41,4 +44,7 @@ class VOIDGAMESHYPERGUNNER_API AMainHUD : public AHUD, public IWidgetContainable
 
 		UPROPERTY()
 		TMap<bool, UTexture2D*> CachedCharacterData = {};
+
+		UPROPERTY()
+		UUserWidget* InGameWidgetInstance = nullptr;
 };

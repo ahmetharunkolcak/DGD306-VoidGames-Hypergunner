@@ -3,6 +3,7 @@
 #include "Kismet/GameplayStatics.h"
 
 #include "Classes/Actors/SpawnPoint.h"
+#include "Classes/CameraActors/SideViewCameraActor.h"
 #include "GameFramework/HUD.h"
 #include "Interfaces/WidgetContainable.h"
 
