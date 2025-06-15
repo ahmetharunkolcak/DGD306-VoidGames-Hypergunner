@@ -51,12 +51,20 @@ void UInGameWidget::UpdateHealthFor(const AActor* Player, const bool bIsLeftPlay
 	const float CharacterMaximumHealth = HealthComponentContainableInterface -> GetCharacterMaximumHealth();
 
 	if (bIsLeftPlayer) {
+		if (this -> AnimTimeForHealthBarL > 0.0f || this -> AnimTimeForHealthBarL < this -> HealthBarUpdateAnimationTime) {
+			this -> bIsAnimationInterruptedForL = true;
+		}
+
 		this -> AnimTimeForHealthBarL = 0.0f;
 		this -> bIsUpdatingLeftHealthBar = true;
 		this -> TargetHealthForBarL = CharacterHealthRate;
 		this -> TargetCurrentHealthForBarL = CharacterCurrentHealth;
 		this -> TargetMaximumHealthForBarL = CharacterMaximumHealth;
 	} else {
+		if (this -> AnimTimeForHealthBarR > 0.0f || this -> AnimTimeForHealthBarR < this -> HealthBarUpdateAnimationTime) {
+			this -> bIsAnimationInterruptedForR = true;
+		}
+
 		this -> AnimTimeForHealthBarR = 0.0f;
 		this -> bIsUpdatingRightHealthBar = true;
 		this -> TargetHealthForBarR = CharacterHealthRate;
@@ -132,6 +140,14 @@ void UInGameWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime) {
 		return;
 	}
 
+	if (this -> bIsAnimationInterruptedForL) {
+		this -> LastCurrentHealthForBarL = this -> CachedCurrentHealthForBarL;
+	}
+
+	if (this -> bIsAnimationInterruptedForR) {
+		this -> LastCurrentHealthForBarR = this -> CachedCurrentHealthForBarR;
+	}
+
 	if (bIsUpdatingLeftHealthBar) {
 		if (FMath::IsNearlyEqual(this -> AnimTimeForHealthBarL, this -> HealthBarUpdateAnimationTime, 0.001f)) {
 			this -> HealthBarL -> SetPercent(this -> TargetHealthForBarL);
@@ -142,16 +158,17 @@ void UInGameWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime) {
 			this -> HealthValueL -> SetText(FText::FromString(HealthText));
 			this -> AnimTimeForHealthBarL = this -> HealthBarUpdateAnimationTime;
 			this -> bIsUpdatingLeftHealthBar = false;
+			this -> bIsAnimationInterruptedForL = false;
 		} else {
 			this -> AnimTimeForHealthBarL += InDeltaTime;
-			const float RawAlpha = this -> AnimTimeForHealthBarR / this -> HealthBarUpdateAnimationTime;
+			const float RawAlpha = this -> AnimTimeForHealthBarL / this -> HealthBarUpdateAnimationTime;
 			const float Alpha = FMath::Clamp(FMath::InterpEaseInOut(0.0f, 1.0f, RawAlpha, this -> AnimationInterpolationSpeed), 0.0f, 1.0f);
 			const float DisplayedPercentageForL = this -> HealthBarL -> GetPercent();
 			const float NewBarPercentValue = FMath::Lerp(DisplayedPercentageForL, this -> TargetHealthForBarL, Alpha);
-			this -> LastCurrentHealthForBarL = FMath::Lerp(this -> LastCurrentHealthForBarL, this -> TargetCurrentHealthForBarL, Alpha);
+			this -> CachedCurrentHealthForBarL = FMath::Lerp(this -> LastCurrentHealthForBarL, this -> TargetCurrentHealthForBarL, Alpha);
 			this -> HealthBarL -> SetPercent(NewBarPercentValue);
 			FString HealthText = FString::Printf(TEXT("%d / %d"),
-			                                     FMath::RoundToInt(this -> LastCurrentHealthForBarL),
+			                                     FMath::RoundToInt(this -> CachedCurrentHealthForBarL),
 			                                     FMath::RoundToInt(this -> TargetMaximumHealthForBarL));
 			this -> HealthValueL -> SetText(FText::FromString(HealthText));
 
@@ -164,6 +181,7 @@ void UInGameWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime) {
 				this -> HealthValueL -> SetText(FText::FromString(HealthText));
 				this -> AnimTimeForHealthBarL = this -> HealthBarUpdateAnimationTime;
 				this -> bIsUpdatingLeftHealthBar = false;
+				this -> bIsAnimationInterruptedForL = false;
 			}
 		}
 	}
@@ -178,16 +196,17 @@ void UInGameWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime) {
 			this -> HealthValueR -> SetText(FText::FromString(HealthText));
 			this -> AnimTimeForHealthBarR = this -> HealthBarUpdateAnimationTime;
 			this -> bIsUpdatingRightHealthBar = false;
+			this -> bIsAnimationInterruptedForR = false;
 		} else {
 			this -> AnimTimeForHealthBarR += InDeltaTime;
 			const float RawAlpha = this -> AnimTimeForHealthBarR / this -> HealthBarUpdateAnimationTime;
 			const float Alpha = FMath::Clamp(FMath::InterpEaseInOut(0.0f, 1.0f, RawAlpha, this -> AnimationInterpolationSpeed), 0.0f, 1.0f);
 			const float DisplayedPercentageForR = this -> HealthBarR -> GetPercent();
 			const float NewBarPercentValue = FMath::Lerp(DisplayedPercentageForR, this -> TargetHealthForBarR, Alpha);
-			this -> LastCurrentHealthForBarR = FMath::Lerp(this -> LastCurrentHealthForBarR, this -> TargetCurrentHealthForBarR, Alpha);
+			this -> CachedCurrentHealthForBarR = FMath::Lerp(this -> LastCurrentHealthForBarR, this -> TargetCurrentHealthForBarR, Alpha);
 			this -> HealthBarR -> SetPercent(NewBarPercentValue);
 			FString HealthText = FString::Printf(TEXT("%d \\ %d"),
-			                                     FMath::RoundToInt(this -> LastCurrentHealthForBarR),
+			                                     FMath::RoundToInt(this -> CachedCurrentHealthForBarR),
 			                                     FMath::RoundToInt(this -> TargetMaximumHealthForBarR));
 			this -> HealthValueR -> SetText(FText::FromString(HealthText));
 
@@ -200,6 +219,7 @@ void UInGameWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime) {
 				this -> HealthValueR -> SetText(FText::FromString(HealthText));
 				this -> AnimTimeForHealthBarR = this -> HealthBarUpdateAnimationTime;
 				this -> bIsUpdatingRightHealthBar = false;
+				this -> bIsAnimationInterruptedForR = false;
 			}
 		}
 	}

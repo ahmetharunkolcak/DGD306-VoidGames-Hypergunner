@@ -112,6 +112,7 @@ class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter, public IHea
 	private:
 		bool bIsAnimationPlaying = false;
 		bool bDidTheCharacterDie = false;
+		bool bShouldBlockInput = false;
 		bool bDidFinishHimTriggered = false;
 
 		int32 NormalAttackIndex = 0;

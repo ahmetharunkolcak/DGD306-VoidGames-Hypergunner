@@ -66,8 +66,14 @@ class VOIDGAMESHYPERGUNNER_API UInGameWidget : public UUserWidget, public IVisua
 		float AnimationInterpolationSpeed = 3.0f;
 
 	private:
+		bool bIsAnimationInterruptedForL = false;
+		bool bIsAnimationInterruptedForR = false;
+
 		float LastCurrentHealthForBarL = 100.0f;
 		float LastCurrentHealthForBarR = 100.0f;
+
+		float CachedCurrentHealthForBarL = 100.0f;
+		float CachedCurrentHealthForBarR = 100.0f;
 
 		float TargetCurrentHealthForBarL = 100.0f;
 		float TargetCurrentHealthForBarR = 100.0f;

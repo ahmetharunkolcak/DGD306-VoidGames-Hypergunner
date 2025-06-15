@@ -6,6 +6,7 @@
 #include "EnhancedInputComponent.h"
 
 #include "Classes/ActorComponents/HealthComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 APlayerCharacter::APlayerCharacter() {
@@ -69,6 +70,8 @@ float APlayerCharacter::TakeDamage(const float Damage, const FDamageEvent& Damag
 			       Warning,
 			       TEXT("APlayerCharacter::TakeDamage: DefeatAnimationList is nullptr for Loser Player!"));
 		}
+
+		return ActualDamage;
 	}
 
 	if (this -> HealthComponent != nullptr) {
@@ -76,6 +79,30 @@ float APlayerCharacter::TakeDamage(const float Damage, const FDamageEvent& Damag
 		this -> OnHealthChanged.Broadcast(this -> PlayerIndex);
 
 		if (this -> HealthComponent -> GetCurrentHealth() <= 0.0f) {
+			if (const APlayerCharacter* WinnerPlayer = Cast<APlayerCharacter>(DamageCauser);
+				WinnerPlayer != nullptr) {
+				WinnerPlayer -> GetMesh() -> GetAnimInstance() -> StopAllMontages(0.5f);
+				this -> GetMesh() -> GetAnimInstance() -> StopAllMontages(0.5f);
+
+				if (UCharacterMovementComponent* WinnerPlayerMovementComponent = WinnerPlayer -> GetCharacterMovement();
+					WinnerPlayerMovementComponent != nullptr) {
+					WinnerPlayerMovementComponent -> DisableMovement();
+				} else {
+					UE_LOG(LogTemp,
+					       Warning,
+					       TEXT("APlayerCharacter::TakeDamage: Tried to disable movement for Winner Player but WinnerPlayerMovementComponent was null!"))
+				}
+
+				if (UCharacterMovementComponent* LoserPlayerMovementComponent = this -> GetCharacterMovement();
+					LoserPlayerMovementComponent != nullptr) {
+					LoserPlayerMovementComponent -> DisableMovement();
+				} else {
+					UE_LOG(LogTemp,
+						   Warning,
+						   TEXT("APlayerCharacter::TakeDamage: Tried to disable movement for Loser Player but LoserPlayerMovementComponent was null!"))
+				}
+			}
+
 			this -> Die();
 		} else {
 			this -> GetHit();
@@ -136,6 +163,10 @@ void APlayerCharacter::PossessedBy(AController* NewController) {
 }
 
 void APlayerCharacter::Move(const FInputActionValue& Value) {
+	if (this -> bDidTheCharacterDie || this -> bShouldBlockInput) {
+		return;
+	}
+
 	const float MovementScaleValue = Value.Get<float>();
 	if (FMath::IsNearlyZero(MovementScaleValue)) {
 		return;
@@ -154,6 +185,10 @@ void APlayerCharacter::Move(const FInputActionValue& Value) {
 }
 
 void APlayerCharacter::DoNormalAttack(const FInputActionValue& Value) {
+	if (this -> bDidTheCharacterDie || this -> bShouldBlockInput) {
+		return;
+	}
+
 	if (!this -> bIsAnimationPlaying) {
 		if (const FAnimationListData* NormalAttackAnimationList = this -> FindAnimationsByName(FName("NormalAttack"));
 			NormalAttackAnimationList != nullptr) {
@@ -168,6 +203,10 @@ void APlayerCharacter::DoNormalAttack(const FInputActionValue& Value) {
 }
 
 void APlayerCharacter::DoHeavyAttack(const FInputActionValue& Value) {
+	if (this -> bDidTheCharacterDie || this -> bShouldBlockInput) {
+		return;
+	}
+
 	if (!this -> bIsAnimationPlaying) {
 		if (const FAnimationListData* HeavyAttackAnimationList = this -> FindAnimationsByName(FName("HeavyAttack"));
 			HeavyAttackAnimationList != nullptr) {
@@ -182,6 +221,10 @@ void APlayerCharacter::DoHeavyAttack(const FInputActionValue& Value) {
 }
 
 void APlayerCharacter::DoSkillAttack(const FInputActionValue& Value) {
+	if (this -> bDidTheCharacterDie || this -> bShouldBlockInput) {
+		return;
+	}
+
 	if (!this -> bIsAnimationPlaying) {
 		if (const FAnimationListData* SkillAttackAnimationList = this -> FindAnimationsByName(FName("SkillAttack"));
 			SkillAttackAnimationList != nullptr) {
@@ -196,6 +239,10 @@ void APlayerCharacter::DoSkillAttack(const FInputActionValue& Value) {
 }
 
 void APlayerCharacter::Dodge(const FInputActionValue& Value) {
+	if (this -> bDidTheCharacterDie || this -> bShouldBlockInput) {
+		return;
+	}
+
 	if (!this -> bIsAnimationPlaying) {
 		if (const FAnimationListData* DodgeAnimationList = this -> FindAnimationsByName(FName("Dodge"));
 			DodgeAnimationList != nullptr) {
@@ -218,6 +265,10 @@ void APlayerCharacter::Dodge(const FInputActionValue& Value) {
 	}
 }
 void APlayerCharacter::GetHit() {
+	if (this -> bDidTheCharacterDie || this -> bShouldBlockInput) {
+		return;
+	}
+
 	if (const FAnimationListData* GetHitAnimationList = this -> FindAnimationsByName(FName("GetHit"));
 		GetHitAnimationList != nullptr) {
 		const TArray<FAnimationData>& Montages = GetHitAnimationList -> Montages;
@@ -228,7 +279,10 @@ void APlayerCharacter::GetHit() {
 			   TEXT("APlayerCharacter::GetHit: GetHitAnimationList is nullptr!"));
 	}
 }
+
 void APlayerCharacter::Victory() {
+	this -> bShouldBlockInput = true;
+
 	if (const FAnimationListData* VictoryAnimationList = this -> FindAnimationsByName(FName("Victory"));
 		VictoryAnimationList != nullptr) {
 		const TArray<FAnimationData>& Montages = VictoryAnimationList -> Montages;
@@ -241,6 +295,8 @@ void APlayerCharacter::Victory() {
 }
 
 void APlayerCharacter::Defeat() {
+	this -> bShouldBlockInput = true;
+
 	if (const FAnimationListData* DefeatAnimationList = this -> FindAnimationsByName(FName("Defeat"));
 		DefeatAnimationList != nullptr) {
 		const TArray<FAnimationData>& Montages = DefeatAnimationList -> Montages;
@@ -419,19 +475,9 @@ void APlayerCharacter::Die() {
 
 	this -> bDidTheCharacterDie = true;
 
-	if (APlayerController* PlayerController = Cast<APlayerController>(GetController());
-		PlayerController != nullptr) {
-		PlayerController -> DisableInput(PlayerController);
-	} else {
-		UE_LOG(LogTemp,
-		       Warning,
-		       TEXT("APlayerCharacter::Die: Tried to disable input due to death but PlayerController reference was null!"));
-	}
-
 	if (const FSoundListData* FinishHimSounds = this -> FindSoundsByName("FinishHim");
 		FinishHimSounds != nullptr) {
 		this -> PlaySoundOf(FinishHimSounds -> Sounds, -1);
-		this -> bDidTheCharacterDie = true;
 	} else {
 		UE_LOG(LogTemp,
 			   Warning,
