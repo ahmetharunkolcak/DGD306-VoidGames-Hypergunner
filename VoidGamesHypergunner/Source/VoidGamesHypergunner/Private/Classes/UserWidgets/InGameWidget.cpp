@@ -1,5 +1,6 @@
 ﻿#include "Classes/UserWidgets/InGameWidget.h"
 
+#include "Classes/Characters/PlayerCharacter.h"
 #include "Components/Image.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
@@ -48,9 +49,35 @@ void UInGameWidget::UpdateHealthFor(const AActor* Player, const bool bIsLeftPlay
 	const float CharacterHealthRate = HealthComponentContainableInterface -> GetCharacterHealthRate();
 
 	if (bIsLeftPlayer) {
-		this -> HealthBarL -> SetPercent(CharacterHealthRate);
+		this -> AnimTimeForHealthBarL = 0.0f;
+		this -> bIsUpdatingLeftHealthBar = true;
+		this -> TargetHealthForBarL = CharacterHealthRate;
 	} else {
-		this -> HealthBarR -> SetPercent(CharacterHealthRate);
+		this -> AnimTimeForHealthBarR = 0.0f;
+		this -> bIsUpdatingRightHealthBar = true;
+		this -> TargetHealthForBarR = CharacterHealthRate;
+	}
+}
+
+void UInGameWidget::SetupPlayerListeners(const TArray<AActor*>& Players) {
+	for (AActor* Player : Players) {
+		this -> TrackedPlayers.Add(Cast<APlayerCharacter>(Player));
+	}
+
+	for (APlayerCharacter* Player : this -> TrackedPlayers) {
+		if (Player != nullptr) {
+			Player -> OnHealthChanged.AddDynamic(this, &UInGameWidget::HandleHealthChanged);
+		}
+	}
+}
+
+void UInGameWidget::HandleHealthChanged(const int32 PlayerIndex) {
+	for (const APlayerCharacter* Player : this -> TrackedPlayers) {
+		if (Player != nullptr && Player -> GetPlayerIndex() == PlayerIndex) {
+			const bool bIsLeftPlayer = (PlayerIndex == 0);
+			this -> UpdateHealthFor(Player, bIsLeftPlayer);
+			return;
+		}
 	}
 }
 
@@ -79,4 +106,52 @@ FText UInGameWidget::GetFormattedTime(float Time) const {
 	const FText FormattedText = FText::Format(TextFormat, Args);
 
 	return FormattedText;
+}
+
+void UInGameWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime) {
+	Super::NativeTick(MyGeometry, InDeltaTime);
+
+	if (!bIsUpdatingLeftHealthBar && !bIsUpdatingRightHealthBar) {
+		return;
+	}
+
+	if (bIsUpdatingLeftHealthBar) {
+		if (FMath::IsNearlyEqual(this -> AnimTimeForHealthBarL, this -> HealthBarUpdateAnimationTime, 0.001f)) {
+			this -> HealthBarL -> SetPercent(this -> TargetHealthForBarL);
+			this -> AnimTimeForHealthBarL = this -> HealthBarUpdateAnimationTime;
+			this -> bIsUpdatingLeftHealthBar = false;
+		} else {
+			this -> AnimTimeForHealthBarL += InDeltaTime;
+			float Alpha = FMath::Clamp(this -> AnimTimeForHealthBarL / this -> HealthBarUpdateAnimationTime, 0.0f, 1.0f);
+			const float DisplayedPercentageForL = this -> HealthBarL -> GetPercent();
+			const float NewBarPercentValue = FMath::Lerp(DisplayedPercentageForL, this -> TargetHealthForBarL, Alpha);
+			this -> HealthBarL -> SetPercent(NewBarPercentValue);
+
+			if (FMath::IsNearlyEqual(Alpha, 1.0f)) {
+				this -> HealthBarL -> SetPercent(this -> TargetHealthForBarL);
+				this -> AnimTimeForHealthBarL = this -> HealthBarUpdateAnimationTime;
+				this -> bIsUpdatingLeftHealthBar = false;
+			}
+		}
+	}
+
+	if (bIsUpdatingRightHealthBar) {
+		if (FMath::IsNearlyEqual(this -> AnimTimeForHealthBarR, this -> HealthBarUpdateAnimationTime, 0.001f)) {
+			this -> HealthBarR -> SetPercent(this -> TargetHealthForBarR);
+			this -> AnimTimeForHealthBarR = this -> HealthBarUpdateAnimationTime;
+			this -> bIsUpdatingRightHealthBar = false;
+		} else {
+			this -> AnimTimeForHealthBarR += InDeltaTime;
+			float Alpha = FMath::Clamp(this -> AnimTimeForHealthBarR / this -> HealthBarUpdateAnimationTime, 0.0f, 1.0f);
+			const float DisplayedPercentageForR = this -> HealthBarR -> GetPercent();
+			const float NewBarPercentValue = FMath::Lerp(DisplayedPercentageForR, this -> TargetHealthForBarR, Alpha);
+			this -> HealthBarR -> SetPercent(NewBarPercentValue);
+
+			if (FMath::IsNearlyEqual(Alpha, 1.0f)) {
+				this -> HealthBarR -> SetPercent(this -> TargetHealthForBarR);
+				this -> AnimTimeForHealthBarR = this -> HealthBarUpdateAnimationTime;
+				this -> bIsUpdatingRightHealthBar = false;
+			}
+		}
+	}
 }

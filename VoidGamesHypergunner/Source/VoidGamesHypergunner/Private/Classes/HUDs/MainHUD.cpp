@@ -1,5 +1,7 @@
 ﻿#include "Classes/HUDs/MainHUD.h"
 
+#include "Classes/Characters/PlayerCharacter.h"
+#include "Classes/UserWidgets/InGameWidget.h"
 #include "GameFramework/GameModeBase.h"
 #include "Interfaces/TimerContainable.h"
 #include "Interfaces/VisualContainable.h"
@@ -36,6 +38,10 @@ void AMainHUD::BeginPlay() {
 	}
 
 	UUserWidget* InGameStatusWidgetInstance = CreateWidget<UUserWidget>(CurrentWorld, this -> InGameStatusWidget);
+	TArray<AActor*> SpawnedCharacters;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerCharacter::StaticClass(), SpawnedCharacters);
+	Cast<UInGameWidget>(InGameStatusWidgetInstance) -> SetupPlayerListeners(SpawnedCharacters);
+
 	if (InGameStatusWidgetInstance == nullptr) {
 		UE_LOG(LogTemp,
 			   Warning,

@@ -53,6 +53,7 @@ void AMainGameMode::BeginPlay() {
 			}
 			if (SpawnIndex == 0) {
 				AActor* SpawnedPlayerActor = CurrentWorld -> SpawnActor(SpawningActorClass, &CurrentPlayerStartTransform);
+				Cast<APlayerCharacter>(SpawnedPlayerActor) -> SetPlayerIndex(SpawnIndex);
 				APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 				APawn* PlayerPawn = Cast<APawn>(SpawnedPlayerActor);
 				PlayerController -> Possess(PlayerPawn);
@@ -68,6 +69,7 @@ void AMainGameMode::BeginPlay() {
 				FString OutErrorMessage;
 				if (const ULocalPlayer* CreatedLocalPlayer = CurrentGameInstance -> CreateLocalPlayer(-1, OutErrorMessage, true)) {
 					AActor* SpawnedPlayerActor = CurrentWorld -> SpawnActor(SpawningActorClass, &CurrentPlayerStartTransform);
+					Cast<APlayerCharacter>(SpawnedPlayerActor) -> SetPlayerIndex(SpawnIndex);
 					APlayerController* PlayerController = CreatedLocalPlayer -> GetPlayerController(CurrentWorld);
 					APawn* PlayerPawn = Cast<APawn>(SpawnedPlayerActor);
 					PlayerController -> Possess(PlayerPawn);

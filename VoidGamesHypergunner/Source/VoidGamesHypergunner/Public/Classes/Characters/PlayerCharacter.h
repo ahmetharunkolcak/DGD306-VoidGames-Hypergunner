@@ -17,6 +17,9 @@ class UInputComponent;
 class UInputMappingContext;
 class UInputAction;
 class UHealthComponent;
+class UBoxComponent;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChangedSignature, int32, PlayerIndex);
 
 UCLASS()
 class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter, public IHealthComponentContainable {
@@ -26,6 +29,10 @@ class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter, public IHea
 		APlayerCharacter();
 
 		virtual float GetCharacterHealthRate() const override;
+		void TryDealingDamage(const float Amount);
+		virtual float TakeDamage(const float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+		FORCEINLINE virtual int32 GetPlayerIndex() const { return this -> PlayerIndex; }
+		FORCEINLINE virtual void SetPlayerIndex(const int32 NewIndex) { this -> PlayerIndex = NewIndex; }
 
 	protected:
 		virtual void BeginPlay() override;
@@ -53,13 +60,15 @@ class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter, public IHea
 		UFUNCTION(BlueprintCallable)
 		FAnimationListData FindAnimationsByName(const FName Name) const;
 
-		UFUNCTION(BlueprintCallable)
-		bool IsAnyAnimationPlayingInGivenList(const TArray<FAnimationData> AnimationDataArray) const;
-
 		float PlayAnimationOf(const TArray<FAnimationData>& Array, const int32 Index, const int32 AttackType);
 		void ResetCombos();
+		void Die();
 
 		virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+
+	public:
+		UPROPERTY()
+		FOnHealthChangedSignature OnHealthChanged = {};
 
 	protected:
 		UPROPERTY(EditAnywhere, Category = "Custom|Input")
@@ -79,6 +88,11 @@ class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter, public IHea
 
 		UPROPERTY(EditAnywhere, Category = "Custom|Health")
 		float MaximumHealth = 100.0f;
+
+		UPROPERTY(EditAnywhere, Category = "Custom|Attack")
+		float AttackRange = 100.0f;
+
+		int32 PlayerIndex = 0;
 
 	private:
 		bool bIsAnimationPlaying = false;

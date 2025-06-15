@@ -6,6 +6,8 @@
 #include "EnhancedInputComponent.h"
 
 #include "Classes/ActorComponents/HealthComponent.h"
+#include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 APlayerCharacter::APlayerCharacter() {
 	PrimaryActorTick.bCanEverTick = false;
@@ -19,6 +21,34 @@ float APlayerCharacter::GetCharacterHealthRate() const {
 	const float HealthRate = CurHealth / MaxHealth;
 	const float ClampedHealthRate = FMath::Clamp(HealthRate, 0.0f, 1.0f);
 	return ClampedHealthRate;
+}
+
+void APlayerCharacter::TryDealingDamage(const float Amount) {
+	const FVector Start = GetActorLocation();
+	const FVector End = Start + GetActorForwardVector() * this -> AttackRange;
+
+	FCollisionQueryParams CollisionQueryParams;
+	CollisionQueryParams.AddIgnoredActor(this);
+
+	if (FHitResult HitResult;
+		GetWorld() -> LineTraceSingleByChannel(HitResult, Start, End, ECC_Pawn, CollisionQueryParams)) {
+		if (AActor* HitActor = HitResult.GetActor()) {
+			UGameplayStatics::ApplyDamage(HitActor, Amount, this -> GetController(), this, UDamageType::StaticClass());
+		}
+	}
+}
+
+float APlayerCharacter::TakeDamage(const float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser) {
+	const float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	if (this -> HealthComponent != nullptr) {
+		this -> HealthComponent -> UpdateHealth(ActualDamage, true, false);
+		this -> OnHealthChanged.Broadcast(this -> PlayerIndex);
+		if (this -> HealthComponent -> GetCurrentHealth() <= 0.0f) {
+			this -> Die();
+		}
+	}
+
+	return ActualDamage;
 }
 
 void APlayerCharacter::BeginPlay() {
@@ -174,17 +204,6 @@ FAnimationListData APlayerCharacter::FindAnimationsByName(const FName Name) cons
 	return FAnimationListData({});
 }
 
-bool APlayerCharacter::IsAnyAnimationPlayingInGivenList(const TArray<FAnimationData> AnimationDataArray) const {
-	const UAnimInstance* AnimInstance = this -> GetMesh() -> GetAnimInstance();
-	for (const auto& [Montage, PlayRate] : AnimationDataArray) {
-		if (AnimInstance -> Montage_IsPlaying(Montage)) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
 float APlayerCharacter::PlayAnimationOf(const TArray<FAnimationData>& Array, const int32 Index, const int32 AttackType) {
 	if (this -> bIsAnimationPlaying) {
 		return 0.0f;
@@ -253,6 +272,10 @@ void APlayerCharacter::ResetCombos() {
 	this -> HeavyAttackIndex = 0;
 	this -> SkillAttackIndex = 0;
 	this -> bIsAnimationPlaying = false;
+}
+
+void APlayerCharacter::Die() {
+
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) {
