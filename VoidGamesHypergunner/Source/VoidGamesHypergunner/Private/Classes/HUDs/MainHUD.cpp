@@ -113,7 +113,7 @@ void AMainHUD::BeginPlay() {
 	this -> VisualContainableInterfaceOfInGameStatusWidget = this -> InGameWidgetInstance;
 	this -> VisualContainableInterfaceOfInGameStatusWidget -> SetTimer(GameTime);
 
-	this -> ApplyCharacterImages();
+	GetWorld() -> GetTimerManager().SetTimerForNextTick(this, &AMainHUD::ApplyCharacterImages);
 
 	this -> bIsTimeObtainableFromGameMode = true;
 
