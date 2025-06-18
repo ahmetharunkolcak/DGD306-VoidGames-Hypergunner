@@ -66,9 +66,6 @@ void AMainHUD::BeginPlay() {
 	}
 
 	this -> InGameWidgetInstance = CreateWidget<UUserWidget>(CurrentWorld, this -> InGameStatusWidget);
-	TArray<AActor*> SpawnedCharacters;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerCharacter::StaticClass(), SpawnedCharacters);
-	Cast<UInGameWidget>(this -> InGameWidgetInstance) -> SetupPlayerListeners(SpawnedCharacters);
 
 	if (this -> InGameWidgetInstance == nullptr) {
 		UE_LOG(LogTemp,

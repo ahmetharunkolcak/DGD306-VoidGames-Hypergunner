@@ -15,6 +15,6 @@ void UHitAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase*
 	}
 
 	if (APlayerCharacter* Attacker = Cast<APlayerCharacter>(Owner)) {
-		Attacker -> TryDealingDamage(this -> DamageForThisAttack);
+		Attacker -> TryDealingDamage(this -> DamageForThisAttack, this -> bPlaySound);
 	}
 }

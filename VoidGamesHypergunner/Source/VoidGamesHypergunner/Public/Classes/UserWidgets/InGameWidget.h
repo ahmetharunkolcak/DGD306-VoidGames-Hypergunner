@@ -21,7 +21,7 @@ class VOIDGAMESHYPERGUNNER_API UInGameWidget : public UUserWidget, public IVisua
 		virtual void SetRightImage(UTexture2D* Image) override;
 		virtual void UpdateHealthFor(const AActor* Player, const bool bIsLeftPlayer) override;
 
-		void SetupPlayerListeners(const TArray<AActor*>& Players);
+		void SetupPlayerListeners();
 
 		UFUNCTION()
 		void HandleHealthChanged(int32 PlayerIndex);

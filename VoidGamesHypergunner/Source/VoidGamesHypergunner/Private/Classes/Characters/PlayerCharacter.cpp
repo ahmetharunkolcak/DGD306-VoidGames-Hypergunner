@@ -24,20 +24,22 @@ float APlayerCharacter::GetCharacterHealthRate() const {
 	return ClampedHealthRate;
 }
 
-void APlayerCharacter::TryDealingDamage(const float Amount) {
+void APlayerCharacter::TryDealingDamage(const float Amount, const bool bShouldPlaySound) {
 	const FVector Start = GetActorLocation();
 	const FVector End = Start + GetActorForwardVector() * this -> AttackRange;
 
 	FCollisionQueryParams CollisionQueryParams;
 	CollisionQueryParams.AddIgnoredActor(this);
 
-	if (const FSoundListData* AttackingSounds = this -> FindSoundsByName("Attack");
-		AttackingSounds != nullptr) {
-		this -> PlaySoundOf(AttackingSounds -> Sounds, -1);
-	} else {
-		UE_LOG(LogTemp,
-			   Warning,
-			   TEXT("APlayerCharacter::TryDealingDamage: AttackingSounds has no sound data."));
+	if (bShouldPlaySound) {
+		if (const FSoundListData* AttackingSounds = this -> FindSoundsByName("Attack");
+		   AttackingSounds != nullptr) {
+			this -> PlaySoundOf(AttackingSounds -> Sounds, -1);
+		   } else {
+		   	UE_LOG(LogTemp,
+					  Warning,
+					  TEXT("APlayerCharacter::TryDealingDamage: AttackingSounds has no sound data."));
+		   }
 	}
 
 	if (FHitResult HitResult;

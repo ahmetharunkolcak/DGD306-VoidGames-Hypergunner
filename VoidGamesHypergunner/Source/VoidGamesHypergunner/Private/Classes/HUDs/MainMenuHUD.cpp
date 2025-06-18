@@ -1,6 +1,7 @@
 ﻿#include "Classes/HUDs/MainMenuHUD.h"
 
 #include "Blueprint/UserWidget.h"
+#include "Classes/GameInstances/MainGameInstance.h"
 #include "Classes/UserWidgets/CharacterOptionWidget.h"
 #include "Classes/UserWidgets/CharacterSelectionWidget.h"
 #include "Classes/UserWidgets/MainMenuWidget.h"
@@ -70,6 +71,9 @@ void AMainMenuHUD::SwitchToCharacterSelection() {
 }
 
 void AMainMenuHUD::SwitchToMainMenu() {
+	UMainGameInstance* GameInstance = Cast<UMainGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	GameInstance -> ResetSelections();
+
 	this -> CharacterSelectionWidgetInstance -> RemoveFromParent();
 	this -> MainMenuWidgetInstance -> AddToViewport();
 }

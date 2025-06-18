@@ -28,13 +28,14 @@ void UCharacterOptionWidget::NativeConstruct() {
 	Super::NativeConstruct();
 
 	this -> SelectButton -> OnClicked.AddDynamic(this, &UCharacterOptionWidget::OnButtonClicked);
+	this -> ResetSelections();
 }
 
 
 void UCharacterOptionWidget::OnButtonClicked() {
 	UMainGameInstance* GameInstance = Cast<UMainGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	const int32 SetIndex = GameInstance -> SetDataForNext(this -> CharacterSelectionData);
-	if (SetIndex == 0) {
+	if (const int32 SetIndex = GameInstance -> SetDataForNext(this -> CharacterSelectionData);
+		SetIndex == 0) {
 		this -> IndexText1 -> SetVisibility(ESlateVisibility::Visible);
 	} else if (SetIndex == 1) {
 		this -> IndexText2 -> SetVisibility(ESlateVisibility::Visible);

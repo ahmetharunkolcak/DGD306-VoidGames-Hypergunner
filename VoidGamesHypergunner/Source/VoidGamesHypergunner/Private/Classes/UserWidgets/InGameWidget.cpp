@@ -1,6 +1,7 @@
 ﻿#include "Classes/UserWidgets/InGameWidget.h"
 
 #include "Classes/Characters/PlayerCharacter.h"
+#include "Classes/GameInstances/MainGameInstance.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
 #include "Components/ProgressBar.h"
@@ -75,7 +76,9 @@ void UInGameWidget::UpdateHealthFor(const AActor* Player, const bool bIsLeftPlay
 	}
 }
 
-void UInGameWidget::SetupPlayerListeners(const TArray<AActor*>& Players) {
+void UInGameWidget::SetupPlayerListeners() {
+	TArray<AActor*> Players;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerCharacter::StaticClass(), Players);
 	for (AActor* Player : Players) {
 		this -> TrackedPlayers.Add(Cast<APlayerCharacter>(Player));
 	}
@@ -124,6 +127,8 @@ void UInGameWidget::OnReturnToMainMenuClicked() {
 			ULocalPlayer* LocalPlayer = GameInstance -> GetLocalPlayerByIndex(i);
 			GameInstance -> RemoveLocalPlayer(LocalPlayer);
 		}
+
+		Cast<UMainGameInstance>(GameInstance) -> ResetSelections();
 	}
 	UGameplayStatics::OpenLevel(GetWorld(), FName("MainMenu"), true);
 }
@@ -149,6 +154,7 @@ void UInGameWidget::NativeConstruct() {
 
 	TArray<AActor*> PlayerCharacters = {};
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerCharacter::StaticClass(), PlayerCharacters);
+	GetWorld() -> GetTimerManager().SetTimerForNextTick(this, &UInGameWidget::SetupPlayerListeners);
 	for (AActor* Actor : PlayerCharacters) {
 		if (APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(Actor);
 			PlayerCharacter -> Implements<UHealthComponentContainable>()) {

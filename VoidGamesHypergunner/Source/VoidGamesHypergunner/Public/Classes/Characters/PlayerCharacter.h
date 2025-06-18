@@ -35,7 +35,7 @@ class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter, public IHea
 		FORCEINLINE virtual float GetCharacterCurrentHealth() const override { return this -> HealthComponent -> GetCurrentHealth(); }
 		FORCEINLINE virtual float GetCharacterMaximumHealth() const override { return this -> HealthComponent -> GetMaximumHealth(); }
 
-		void TryDealingDamage(const float Amount);
+		void TryDealingDamage(const float Amount, const bool bShouldPlaySound);
 		virtual float TakeDamage(const float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 		FORCEINLINE virtual int32 GetPlayerIndex() const { return this -> PlayerIndex; }
 		FORCEINLINE virtual void SetPlayerIndex(const int32 NewIndex) { this -> PlayerIndex = NewIndex; }

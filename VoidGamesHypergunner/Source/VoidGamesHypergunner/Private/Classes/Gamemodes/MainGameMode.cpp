@@ -17,31 +17,36 @@ void AMainGameMode::BeginPlay() {
 	Super::BeginPlay();
 
 	if (UWorld* CurrentWorld = GetWorld()) {
-		TArray<AActor*> PlayerStarts;
-		TArray<FCharacterSelectionData>& PlayerCharactersData = Cast<UMainGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())) -> GetSelectedPlayerCharactersData();
-		UGameplayStatics::GetAllActorsOfClass(CurrentWorld, ASpawnPoint::StaticClass(), PlayerStarts);
-		for (int32 CurrentIndex = 0; CurrentIndex < PlayerStarts.Num(); ++CurrentIndex) {
-			AActor* CurrentPlayerStart = PlayerStarts[CurrentIndex];
+		TArray<AActor*> Actors;
+		TArray<FCharacterSelectionData> PlayerCharactersData = Cast<UMainGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())) -> GetSelectedPlayerCharactersData();
+		UGameplayStatics::GetAllActorsOfClass(CurrentWorld, AActor::StaticClass(), Actors);
+		int32 Index = 0;
+		for (AActor* CurrentActor : Actors) {
+			AActor* CurrentPlayerStart = Cast<ASpawnPoint>(CurrentActor);
+			if (CurrentPlayerStart == nullptr) {
+				continue;
+			}
+
 			if (!CurrentPlayerStart -> Implements<USpawnable>()) {
 				UE_LOG(LogTemp,
 				       Warning,
 				       TEXT("AMainGameMode::BeginPlay: Could not verified Spawnable interface existence on spawn point actor with index %d"),
-				       CurrentIndex);
+				       Index);
 				continue;
 			}
 
 			const FTransform CurrentPlayerStartTransform = CurrentPlayerStart -> GetTransform();
 			
 			TSubclassOf<APlayerCharacter> SpawningActorClass = nullptr;
-			if (PlayerCharactersData.IsValidIndex(CurrentIndex)) {
-				SpawningActorClass = PlayerCharactersData[CurrentIndex].Character3D.Get();
+			if (PlayerCharactersData.IsValidIndex(Index)) {
+				SpawningActorClass = PlayerCharactersData[Index].Character3D.Get();
 			}
 
 			if (SpawningActorClass == nullptr) {
 				UE_LOG(LogTemp,
 				       Warning,
 				       TEXT("AMainGameMode::BeginPlay: Spawning Actor with Index %d could not found: Class is null"),
-				       CurrentIndex);
+				       Index);
 
 				continue;
 			}
@@ -66,7 +71,7 @@ void AMainGameMode::BeginPlay() {
 				AHUD* HUD = PlayerController -> GetHUD();
 				if (HUD -> Implements<UWidgetContainable>()) {
 					IWidgetContainable* WidgetContainableInterface = Cast<IWidgetContainable>(HUD);
-					WidgetContainableInterface -> SetInGameCharacterImage(PlayerCharactersData[CurrentIndex].Character2D, true);
+					WidgetContainableInterface -> SetInGameCharacterImage(PlayerCharactersData[Index].Character2D, true);
 				}
 			} else {
 				UGameInstance* CurrentGameInstance = GetGameInstance();
@@ -93,6 +98,7 @@ void AMainGameMode::BeginPlay() {
 			}
 
 			this -> SpawnedIndexes.Add(SpawnIndex);
+			Index++;
 		}
 	}
 

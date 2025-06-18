@@ -14,4 +14,7 @@ class VOIDGAMESHYPERGUNNER_API UHitAnimNotify : public UAnimNotify {
 	protected:
 		UPROPERTY(EditAnywhere, Category = "Custom|Damage")
 		float DamageForThisAttack = 0.0f;
+
+		UPROPERTY(EditAnywhere, Category = "Custom|Sound")
+		bool bPlaySound = true;
 };
