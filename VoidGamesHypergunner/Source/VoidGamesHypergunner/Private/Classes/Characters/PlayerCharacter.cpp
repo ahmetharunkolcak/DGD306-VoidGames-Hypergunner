@@ -110,6 +110,7 @@ float APlayerCharacter::TakeDamage(const float Damage, const FDamageEvent& Damag
 				}
 			}
 
+			this -> GetHit();
 			this -> Die();
 		} else {
 			this -> GetHit();
