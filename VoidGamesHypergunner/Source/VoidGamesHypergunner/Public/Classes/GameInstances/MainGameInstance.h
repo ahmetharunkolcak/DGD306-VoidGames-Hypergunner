@@ -18,6 +18,11 @@ class VOIDGAMESHYPERGUNNER_API UMainGameInstance : public UGameInstance {
 
 		virtual int32 SetDataForNext(const FCharacterSelectionData& Data);
 		virtual void ResetSelections();
+		virtual void ResetScores();
+		virtual void Init() override;
+
+		FORCEINLINE virtual TArray<int32> GetCurrentScore() { return TArray({*this -> PlayerScores.Find(0), *this -> PlayerScores.Find(1)}); }
+		virtual void AddPointFor(const int32 PlayerIndex);
 
 	protected:
 		UPROPERTY(EditAnywhere, Category = "Custom|CharacterSelection")
@@ -25,4 +30,6 @@ class VOIDGAMESHYPERGUNNER_API UMainGameInstance : public UGameInstance {
 
 	private:
 		TArray<FCharacterSelectionData> SelectedPlayerCharactersData = {};
+
+		TMap<int32, int32> PlayerScores = {};
 };

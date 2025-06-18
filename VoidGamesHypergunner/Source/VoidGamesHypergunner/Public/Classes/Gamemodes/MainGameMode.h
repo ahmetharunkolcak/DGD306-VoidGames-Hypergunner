@@ -25,6 +25,8 @@ class VOIDGAMESHYPERGUNNER_API AMainGameMode : public AGameModeBase, public ITim
 		virtual void BeginPlay() override;
 		virtual void Tick(const float DeltaSeconds) override;
 
+		virtual void UpdateScoreboard();
+
 	protected:
 		UPROPERTY(EditAnywhere, Category = "Custom|Gameplay")
 		float GameTime = 120.0f;

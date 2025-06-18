@@ -23,6 +23,8 @@ class VOIDGAMESHYPERGUNNER_API AMainHUD : public AHUD, public IWidgetContainable
 		virtual void SetInGameCharacterImage(UTexture2D* ImageToSet, const bool bIsForLeftPlayer) override;
 		virtual void TriggerReturnScreen(const bool bIsTimeUp);
 
+		virtual void UpdateScoreboard(const int32 ScoreToUpdate, const bool bIsPlayer1);
+
 	protected:
 		virtual void BeginPlay() override;
 		virtual void Tick(const float DeltaSeconds) override;

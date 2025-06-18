@@ -114,6 +114,8 @@ void AMainGameMode::BeginPlay() {
 		       Warning,
 		       TEXT("AMainGameMode::BeginPlay: Failed to play background music, Sound is null!"));
 	}
+
+	GetWorld() -> GetTimerManager().SetTimerForNextTick(this, &AMainGameMode::UpdateScoreboard);
 }
 
 void AMainGameMode::Tick(const float DeltaSeconds) {
@@ -125,6 +127,13 @@ void AMainGameMode::Tick(const float DeltaSeconds) {
 		Cast<AMainHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0) -> GetHUD()) -> TriggerReturnScreen(true);
 		SetActorTickEnabled(false);
 	}
+}
+
+void AMainGameMode::UpdateScoreboard() {
+	AMainHUD* HUD = Cast<AMainHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0) -> GetHUD());
+	TArray<int32> CurrentScore = Cast<UMainGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())) -> GetCurrentScore();
+	HUD -> UpdateScoreboard(CurrentScore[0], true);
+	HUD -> UpdateScoreboard(CurrentScore[1], false);
 }
 
 float AMainGameMode::GetGameplayTime(const bool bIsCurrentTime) const {

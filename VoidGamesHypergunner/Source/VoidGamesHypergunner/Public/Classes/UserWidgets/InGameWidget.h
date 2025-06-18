@@ -20,6 +20,7 @@ class VOIDGAMESHYPERGUNNER_API UInGameWidget : public UUserWidget, public IVisua
 		virtual void SetLeftImage(UTexture2D* Image) override;
 		virtual void SetRightImage(UTexture2D* Image) override;
 		virtual void UpdateHealthFor(const AActor* Player, const bool bIsLeftPlayer) override;
+		virtual void UpdateScoreboard(const int32 ScoreToUpdate, const bool bIsPlayer1);
 
 		void SetupPlayerListeners();
 
@@ -65,6 +66,12 @@ class VOIDGAMESHYPERGUNNER_API UInGameWidget : public UUserWidget, public IVisua
 
 		UPROPERTY(meta = (BindWidget))
 		UImage* ImageR = nullptr;
+
+		UPROPERTY(meta = (BindWidget))
+		UTextBlock* Player1Score = nullptr;
+
+		UPROPERTY(meta = (BindWidget))
+		UTextBlock* Player2Score = nullptr;
 
 		UPROPERTY(meta = (BindWidget))
 		UButton* RematchButton = nullptr;

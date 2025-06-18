@@ -6,6 +6,7 @@
 #include "EnhancedInputComponent.h"
 
 #include "Classes/ActorComponents/HealthComponent.h"
+#include "Classes/GameInstances/MainGameInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -62,6 +63,8 @@ float APlayerCharacter::TakeDamage(const float Damage, const FDamageEvent& Damag
 			WinnerPlayer != nullptr) {
 			WinnerPlayer -> Victory();
 			this -> Defeat();
+			UMainGameInstance* GameInstance = Cast<UMainGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+			GameInstance -> AddPointFor(WinnerPlayer -> GetPlayerIndex());
 		}
 
 		if (const FAnimationListData* DefeatAnimationList = this -> FindAnimationsByName(FName("Defeat"));

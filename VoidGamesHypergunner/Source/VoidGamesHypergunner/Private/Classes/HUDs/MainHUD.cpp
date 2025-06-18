@@ -36,6 +36,10 @@ void AMainHUD::TriggerReturnScreen(const bool bIsTimeUp) {
 	}
 }
 
+void AMainHUD::UpdateScoreboard(const int32 ScoreToUpdate, const bool bIsPlayer1) {
+	Cast<UInGameWidget>(this -> InGameWidgetInstance) -> UpdateScoreboard(ScoreToUpdate, bIsPlayer1);
+}
+
 void AMainHUD::BeginPlay() {
 	Super::BeginPlay();
 

@@ -76,6 +76,20 @@ void UInGameWidget::UpdateHealthFor(const AActor* Player, const bool bIsLeftPlay
 	}
 }
 
+void UInGameWidget::UpdateScoreboard(const int32 ScoreToUpdate, const bool bIsPlayer1) {
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("Score"), FText::AsNumber(ScoreToUpdate));
+
+	const FTextFormat TextFormat = FText::FromString(TEXT("{Score}"));
+	const FText FormattedText = FText::Format(TextFormat, Args);
+
+	if (bIsPlayer1) {
+		this -> Player1Score -> SetText(FormattedText);
+	} else {
+		this -> Player2Score -> SetText(FormattedText);
+	}
+}
+
 void UInGameWidget::SetupPlayerListeners() {
 	TArray<AActor*> Players;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerCharacter::StaticClass(), Players);
@@ -129,6 +143,7 @@ void UInGameWidget::OnReturnToMainMenuClicked() {
 		}
 
 		Cast<UMainGameInstance>(GameInstance) -> ResetSelections();
+		Cast<UMainGameInstance>(GameInstance) -> ResetScores();
 	}
 	UGameplayStatics::OpenLevel(GetWorld(), FName("MainMenu"), true);
 }

@@ -73,6 +73,7 @@ void AMainMenuHUD::SwitchToCharacterSelection() {
 void AMainMenuHUD::SwitchToMainMenu() {
 	UMainGameInstance* GameInstance = Cast<UMainGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	GameInstance -> ResetSelections();
+	GameInstance -> ResetScores();
 
 	this -> CharacterSelectionWidgetInstance -> RemoveFromParent();
 	this -> MainMenuWidgetInstance -> AddToViewport();
