@@ -40,6 +40,29 @@ void AMainHUD::UpdateScoreboard(const int32 ScoreToUpdate, const bool bIsPlayer1
 	Cast<UInGameWidget>(this -> InGameWidgetInstance) -> UpdateScoreboard(ScoreToUpdate, bIsPlayer1);
 }
 
+void AMainHUD::TogglePauseScreen(const bool bShouldEnable) {
+	if (bShouldEnable) {
+		this -> PauseWidgetInstance -> AddToViewport();
+		this -> PauseWidgetInstance -> SetIsFocusable(true);
+		if (APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+			PlayerController != nullptr) {
+			FInputModeUIOnly InputMode;
+			InputMode.SetWidgetToFocus(this -> PauseWidgetInstance -> TakeWidget());
+			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+			PlayerController -> SetInputMode(InputMode);
+			PlayerController -> bShowMouseCursor = true;
+		}
+	} else {
+		this -> PauseWidgetInstance -> RemoveFromParent();
+		if (APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+		PlayerController != nullptr) {
+			FInputModeGameOnly InputMode;
+			PlayerController -> SetInputMode(InputMode);
+			PlayerController -> bShowMouseCursor = false;
+		}
+	}
+}
+
 void AMainHUD::BeginPlay() {
 	Super::BeginPlay();
 
@@ -107,6 +130,8 @@ void AMainHUD::BeginPlay() {
 		this -> bIsTimeObtainableFromGameMode = false;
 		return;
 	}
+
+	this -> PauseWidgetInstance = CreateWidget<UUserWidget>(CurrentWorld, this -> PauseWidget);
 
 	this -> TimerContainableInterfaceOfGameMode = CurrentGameMode;
 	const float GameTime = this -> TimerContainableInterfaceOfGameMode -> GetGameplayTime(false);

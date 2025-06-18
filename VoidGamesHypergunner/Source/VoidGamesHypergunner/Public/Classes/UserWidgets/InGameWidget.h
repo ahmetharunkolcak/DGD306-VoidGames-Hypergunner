@@ -44,7 +44,8 @@ class VOIDGAMESHYPERGUNNER_API UInGameWidget : public UUserWidget, public IVisua
 
 	protected:
 		virtual FText GetFormattedTime(float Time) const;
-		virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+		virtual void  NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+		virtual void  NativeDestruct() override;
 
 		UPROPERTY(meta = (BindWidget))
 		UProgressBar* HealthBarL = nullptr;

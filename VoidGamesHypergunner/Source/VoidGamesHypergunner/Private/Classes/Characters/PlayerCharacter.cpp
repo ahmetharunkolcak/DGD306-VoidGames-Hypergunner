@@ -7,6 +7,7 @@
 
 #include "Classes/ActorComponents/HealthComponent.h"
 #include "Classes/GameInstances/MainGameInstance.h"
+#include "Classes/Gamemodes/MainGameMode.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -157,6 +158,10 @@ void APlayerCharacter::PossessedBy(AController* NewController) {
 	}
 }
 
+void APlayerCharacter::RequestScoreboardUpdate() {
+	Cast<AMainGameMode>(UGameplayStatics::GetGameMode(GetWorld())) -> UpdateScoreboard();
+}
+
 void APlayerCharacter::Move(const FInputActionValue& Value) {
 	if (this -> bDidTheCharacterDie || this -> bShouldBlockInput) {
 		return;
@@ -259,6 +264,11 @@ void APlayerCharacter::Dodge(const FInputActionValue& Value) {
 		}
 	}
 }
+
+void APlayerCharacter::PauseGame(const FInputActionValue& Value) const {
+	Cast<AMainGameMode>(UGameplayStatics::GetGameMode(GetWorld())) -> TriggerPause();
+}
+
 void APlayerCharacter::GetHit() {
 	if (this -> bDidTheCharacterDie || this -> bShouldBlockInput) {
 		return;

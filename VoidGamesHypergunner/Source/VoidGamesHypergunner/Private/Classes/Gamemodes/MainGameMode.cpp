@@ -17,36 +17,31 @@ void AMainGameMode::BeginPlay() {
 	Super::BeginPlay();
 
 	if (UWorld* CurrentWorld = GetWorld()) {
-		TArray<AActor*> Actors;
+		TArray<AActor*> PlayerSpawns;
 		TArray<FCharacterSelectionData> PlayerCharactersData = Cast<UMainGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())) -> GetSelectedPlayerCharactersData();
-		UGameplayStatics::GetAllActorsOfClass(CurrentWorld, AActor::StaticClass(), Actors);
-		int32 Index = 0;
-		for (AActor* CurrentActor : Actors) {
-			AActor* CurrentPlayerStart = Cast<ASpawnPoint>(CurrentActor);
-			if (CurrentPlayerStart == nullptr) {
-				continue;
-			}
-
+		UGameplayStatics::GetAllActorsOfClass(CurrentWorld, ASpawnPoint::StaticClass(), PlayerSpawns);
+		for (int32 CurrentIndex = 0; CurrentIndex < PlayerSpawns.Num(); ++CurrentIndex) {
+			AActor* CurrentPlayerStart = PlayerSpawns[CurrentIndex];
 			if (!CurrentPlayerStart -> Implements<USpawnable>()) {
 				UE_LOG(LogTemp,
 				       Warning,
 				       TEXT("AMainGameMode::BeginPlay: Could not verified Spawnable interface existence on spawn point actor with index %d"),
-				       Index);
+				       CurrentIndex);
 				continue;
 			}
 
 			const FTransform CurrentPlayerStartTransform = CurrentPlayerStart -> GetTransform();
 			
 			TSubclassOf<APlayerCharacter> SpawningActorClass = nullptr;
-			if (PlayerCharactersData.IsValidIndex(Index)) {
-				SpawningActorClass = PlayerCharactersData[Index].Character3D.Get();
+			if (PlayerCharactersData.IsValidIndex(CurrentIndex)) {
+				SpawningActorClass = PlayerCharactersData[CurrentIndex].Character3D.Get();
 			}
 
 			if (SpawningActorClass == nullptr) {
 				UE_LOG(LogTemp,
 				       Warning,
 				       TEXT("AMainGameMode::BeginPlay: Spawning Actor with Index %d could not found: Class is null"),
-				       Index);
+				       CurrentIndex);
 
 				continue;
 			}
@@ -71,7 +66,7 @@ void AMainGameMode::BeginPlay() {
 				AHUD* HUD = PlayerController -> GetHUD();
 				if (HUD -> Implements<UWidgetContainable>()) {
 					IWidgetContainable* WidgetContainableInterface = Cast<IWidgetContainable>(HUD);
-					WidgetContainableInterface -> SetInGameCharacterImage(PlayerCharactersData[Index].Character2D, true);
+					WidgetContainableInterface -> SetInGameCharacterImage(PlayerCharactersData[CurrentIndex].Character2D, true);
 				}
 			} else {
 				UGameInstance* CurrentGameInstance = GetGameInstance();
@@ -98,7 +93,6 @@ void AMainGameMode::BeginPlay() {
 			}
 
 			this -> SpawnedIndexes.Add(SpawnIndex);
-			Index++;
 		}
 	}
 
@@ -134,6 +128,12 @@ void AMainGameMode::UpdateScoreboard() {
 	TArray<int32> CurrentScore = Cast<UMainGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())) -> GetCurrentScore();
 	HUD -> UpdateScoreboard(CurrentScore[0], true);
 	HUD -> UpdateScoreboard(CurrentScore[1], false);
+}
+
+void AMainGameMode::TriggerPause() {
+	this -> bIsGamePaused = !this -> bIsGamePaused;
+	Cast<AMainHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0) -> GetHUD()) -> TogglePauseScreen(this -> bIsGamePaused);
+	UGameplayStatics::SetGamePaused(GetWorld(), this -> bIsGamePaused);
 }
 
 float AMainGameMode::GetGameplayTime(const bool bIsCurrentTime) const {

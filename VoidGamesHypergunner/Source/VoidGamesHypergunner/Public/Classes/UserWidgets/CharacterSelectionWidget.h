@@ -28,6 +28,7 @@ class VOIDGAMESHYPERGUNNER_API UCharacterSelectionWidget : public UUserWidget {
 
 	protected:
 		virtual void NativeConstruct() override;
+		virtual void NativeDestruct() override;
 
 		UPROPERTY(meta = (BindWidget))
 		UTextBlock* WarningText = nullptr;

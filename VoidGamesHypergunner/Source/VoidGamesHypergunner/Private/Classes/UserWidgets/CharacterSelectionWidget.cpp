@@ -48,3 +48,11 @@ void UCharacterSelectionWidget::NativeConstruct() {
 	this -> PlayButton -> OnClicked.AddDynamic(this, &UCharacterSelectionWidget::OnPlayButtonClicked);
 	this -> ReturnToMainMenuButton -> OnClicked.AddDynamic(this, &UCharacterSelectionWidget::OnReturnToMainMenuButtonClicked);
 }
+
+void UCharacterSelectionWidget::NativeDestruct() {
+	Super::NativeDestruct();
+
+	this -> ResetButton -> OnClicked.RemoveAll(this);
+	this -> PlayButton -> OnClicked.RemoveAll(this);
+	this -> ReturnToMainMenuButton -> OnClicked.RemoveAll(this);
+}

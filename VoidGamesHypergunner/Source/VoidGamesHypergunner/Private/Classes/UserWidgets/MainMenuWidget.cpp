@@ -43,3 +43,10 @@ void UMainMenuWidget::NativeConstruct() {
 			TEXT("UMainMenuWidget::NativeConstruct: Tried to add a click event to QuitButton button but it was null!"));
 	}
 }
+
+void UMainMenuWidget::NativeDestruct() {
+	Super::NativeDestruct();
+
+	this -> PlayButton -> OnClicked.RemoveAll(this);
+	this -> QuitButton -> OnClicked.RemoveAll(this);
+}

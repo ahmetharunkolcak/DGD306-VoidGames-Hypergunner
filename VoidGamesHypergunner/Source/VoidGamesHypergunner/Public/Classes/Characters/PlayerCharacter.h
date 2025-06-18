@@ -44,6 +44,8 @@ class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter, public IHea
 		virtual void BeginPlay() override;
 		virtual void PossessedBy(AController* NewController) override;
 
+		virtual void RequestScoreboardUpdate();
+
 		UFUNCTION()
 		void Move(const FInputActionValue& Value);
 
@@ -58,6 +60,9 @@ class VOIDGAMESHYPERGUNNER_API APlayerCharacter : public ACharacter, public IHea
 
 		UFUNCTION()
 		void Dodge(const FInputActionValue& Value);
+
+		UFUNCTION()
+		void PauseGame(const FInputActionValue& Value) const;
 
 		void GetHit();
 		void Victory();

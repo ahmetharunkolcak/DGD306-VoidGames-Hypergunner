@@ -25,6 +25,8 @@ class VOIDGAMESHYPERGUNNER_API AMainHUD : public AHUD, public IWidgetContainable
 
 		virtual void UpdateScoreboard(const int32 ScoreToUpdate, const bool bIsPlayer1);
 
+		virtual void TogglePauseScreen(const bool bShouldEnable);
+
 	protected:
 		virtual void BeginPlay() override;
 		virtual void Tick(const float DeltaSeconds) override;
@@ -34,6 +36,9 @@ class VOIDGAMESHYPERGUNNER_API AMainHUD : public AHUD, public IWidgetContainable
 	protected:
 		UPROPERTY(EditAnywhere, Category = "Custom|Widgets")
 		TSubclassOf<UUserWidget> InGameStatusWidget = nullptr;
+
+		UPROPERTY(EditAnywhere, Category = "Custom|Widgets")
+		TSubclassOf<UUserWidget> PauseWidget = nullptr;
 
 	private:
 		bool bIsTimeObtainableFromGameMode = false;
@@ -49,4 +54,7 @@ class VOIDGAMESHYPERGUNNER_API AMainHUD : public AHUD, public IWidgetContainable
 
 		UPROPERTY()
 		UUserWidget* InGameWidgetInstance = nullptr;
+
+		UPROPERTY()
+		UUserWidget* PauseWidgetInstance = nullptr;
 };

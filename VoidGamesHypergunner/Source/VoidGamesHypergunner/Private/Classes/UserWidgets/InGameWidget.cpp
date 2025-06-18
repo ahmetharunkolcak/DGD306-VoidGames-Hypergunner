@@ -339,3 +339,10 @@ void UInGameWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime) {
 		}
 	}
 }
+
+void UInGameWidget::NativeDestruct() {
+	Super::NativeDestruct();
+
+	this -> RematchButton -> OnClicked.RemoveAll(this);
+	this -> ReturnToMainMenuButton -> OnClicked.RemoveAll(this);
+}

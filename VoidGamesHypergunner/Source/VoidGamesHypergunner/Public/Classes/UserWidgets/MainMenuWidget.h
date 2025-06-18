@@ -24,6 +24,7 @@ class VOIDGAMESHYPERGUNNER_API UMainMenuWidget : public UUserWidget {
 
 	protected:
 		virtual void NativeConstruct() override;
+		virtual void NativeDestruct() override;
 
 		UPROPERTY(meta = (BindWidget))
 		UButton* PlayButton = nullptr;

@@ -22,6 +22,7 @@ class VOIDGAMESHYPERGUNNER_API UCharacterOptionWidget : public UUserWidget {
 
 		UFUNCTION()
 		virtual void OnButtonClicked();
+		virtual void NativeDestruct() override;
 
 		UPROPERTY(EditAnywhere, Category = "Custom|CharacterData")
 		FCharacterSelectionData CharacterSelectionData = {};

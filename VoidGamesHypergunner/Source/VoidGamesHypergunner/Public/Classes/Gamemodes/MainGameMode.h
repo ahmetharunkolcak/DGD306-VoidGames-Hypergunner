@@ -21,11 +21,13 @@ class VOIDGAMESHYPERGUNNER_API AMainGameMode : public AGameModeBase, public ITim
 		UFUNCTION()
 		void HandleDeath(int32 PlayerIndex);
 
+		virtual void UpdateScoreboard();
+
+		virtual void TriggerPause();
+
 	protected:
 		virtual void BeginPlay() override;
 		virtual void Tick(const float DeltaSeconds) override;
-
-		virtual void UpdateScoreboard();
 
 	protected:
 		UPROPERTY(EditAnywhere, Category = "Custom|Gameplay")
@@ -38,4 +40,6 @@ class VOIDGAMESHYPERGUNNER_API AMainGameMode : public AGameModeBase, public ITim
 		TArray<int32> SpawnedIndexes = {};
 
 		float CurrentTime = 0.0f;
+
+		bool bIsGamePaused = false;
 };

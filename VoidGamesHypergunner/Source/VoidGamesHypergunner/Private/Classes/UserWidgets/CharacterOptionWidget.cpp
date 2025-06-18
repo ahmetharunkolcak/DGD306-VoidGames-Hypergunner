@@ -42,4 +42,8 @@ void UCharacterOptionWidget::OnButtonClicked() {
 	}
 }
 
+void UCharacterOptionWidget::NativeDestruct() {
+	Super::NativeDestruct();
 
+	this -> SelectButton -> OnClicked.RemoveAll(this);
+}
