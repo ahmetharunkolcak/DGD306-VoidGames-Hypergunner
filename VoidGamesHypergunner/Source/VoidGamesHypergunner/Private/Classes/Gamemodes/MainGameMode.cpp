@@ -4,6 +4,7 @@
 
 #include "Classes/Actors/SpawnPoint.h"
 #include "Classes/CameraActors/SideViewCameraActor.h"
+#include "Classes/GameInstances/MainGameInstance.h"
 #include "Classes/HUDs/MainHUD.h"
 #include "GameFramework/HUD.h"
 #include "Interfaces/WidgetContainable.h"
@@ -17,6 +18,7 @@ void AMainGameMode::BeginPlay() {
 
 	if (UWorld* CurrentWorld = GetWorld()) {
 		TArray<AActor*> PlayerStarts;
+		TArray<FCharacterSelectionData>& PlayerCharactersData = Cast<UMainGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())) -> GetSelectedPlayerCharactersData();
 		UGameplayStatics::GetAllActorsOfClass(CurrentWorld, ASpawnPoint::StaticClass(), PlayerStarts);
 		for (int32 CurrentIndex = 0; CurrentIndex < PlayerStarts.Num(); ++CurrentIndex) {
 			AActor* CurrentPlayerStart = PlayerStarts[CurrentIndex];
@@ -31,8 +33,8 @@ void AMainGameMode::BeginPlay() {
 			const FTransform CurrentPlayerStartTransform = CurrentPlayerStart -> GetTransform();
 			
 			TSubclassOf<APlayerCharacter> SpawningActorClass = nullptr;
-			if (this -> PlayerCharactersData.IsValidIndex(CurrentIndex)) {
-				SpawningActorClass = this -> PlayerCharactersData[CurrentIndex].Character3D.Get();
+			if (PlayerCharactersData.IsValidIndex(CurrentIndex)) {
+				SpawningActorClass = PlayerCharactersData[CurrentIndex].Character3D.Get();
 			}
 
 			if (SpawningActorClass == nullptr) {

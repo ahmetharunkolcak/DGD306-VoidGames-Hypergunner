@@ -13,6 +13,9 @@ struct FCharacterSelectionData {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere)
+	FText CharacterName = FText::FromString("");
+
+	UPROPERTY(EditAnywhere)
 	TSubclassOf<APlayerCharacter> Character3D = nullptr;
 
 	UPROPERTY(EditAnywhere)

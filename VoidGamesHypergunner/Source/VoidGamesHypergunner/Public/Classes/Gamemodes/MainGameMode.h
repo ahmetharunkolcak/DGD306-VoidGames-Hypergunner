@@ -26,9 +26,6 @@ class VOIDGAMESHYPERGUNNER_API AMainGameMode : public AGameModeBase, public ITim
 		virtual void Tick(const float DeltaSeconds) override;
 
 	protected:
-		UPROPERTY(EditAnywhere, Category = "Custom|PlayerSelection")
-		TArray<FCharacterSelectionData> PlayerCharactersData = {};
-
 		UPROPERTY(EditAnywhere, Category = "Custom|Gameplay")
 		float GameTime = 120.0f;
 

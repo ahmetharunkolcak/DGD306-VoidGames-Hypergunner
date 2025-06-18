@@ -1,6 +1,8 @@
 ﻿#include "Classes/HUDs/MainMenuHUD.h"
 
 #include "Blueprint/UserWidget.h"
+#include "Classes/UserWidgets/CharacterOptionWidget.h"
+#include "Classes/UserWidgets/CharacterSelectionWidget.h"
 #include "Classes/UserWidgets/MainMenuWidget.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -41,6 +43,7 @@ void AMainMenuHUD::BeginPlay() {
 
 	UMainMenuWidget* MainMenuWidget = Cast<UMainMenuWidget>(this -> MainMenuWidgetInstance);
 	MainMenuWidget -> SetIsFocusable(true);
+	MainMenuWidget -> OnPlayClicked.AddDynamic(this, &AMainMenuHUD::SwitchToCharacterSelection);
 
 	if (APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 		PlayerController != nullptr) {
@@ -50,4 +53,23 @@ void AMainMenuHUD::BeginPlay() {
 		PlayerController -> SetInputMode(InputMode);
 		PlayerController -> bShowMouseCursor = true;
 	}
+
+	this -> CharacterSelectionWidgetInstance = CreateWidget<UUserWidget>(CurrentWorld, this -> CharacterSelectionWidget);
+	UCharacterSelectionWidget* CharacterSelectWidget = Cast<UCharacterSelectionWidget>(this -> CharacterSelectionWidgetInstance);
+	CharacterSelectWidget -> OnBackClicked.AddDynamic(this, &AMainMenuHUD::SwitchToMainMenu);
+	if (this -> MainMenuWidgetInstance == nullptr) {
+		UE_LOG(LogTemp,
+			   Warning,
+			   TEXT("AMainMenuHUD::BeginPlay: Failed to create CharacterSelectionWidget instance with the given class!"));
+	}
+}
+
+void AMainMenuHUD::SwitchToCharacterSelection() {
+	this -> MainMenuWidgetInstance -> RemoveFromParent();
+	this -> CharacterSelectionWidgetInstance -> AddToViewport();
+}
+
+void AMainMenuHUD::SwitchToMainMenu() {
+	this -> CharacterSelectionWidgetInstance -> RemoveFromParent();
+	this -> MainMenuWidgetInstance -> AddToViewport();
 }

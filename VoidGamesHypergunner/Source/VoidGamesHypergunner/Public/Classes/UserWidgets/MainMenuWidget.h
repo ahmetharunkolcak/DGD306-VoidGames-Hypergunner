@@ -4,6 +4,8 @@
 #include "Blueprint/UserWidget.h"
 #include "MainMenuWidget.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayClicked);
+
 class UButton;
 
 UCLASS()
@@ -16,6 +18,9 @@ class VOIDGAMESHYPERGUNNER_API UMainMenuWidget : public UUserWidget {
 
 		UFUNCTION()
 		void OnQuitButtonClicked();
+
+	public:
+		FOnPlayClicked OnPlayClicked;
 
 	protected:
 		virtual void NativeConstruct() override;

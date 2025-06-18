@@ -14,10 +14,23 @@ class VOIDGAMESHYPERGUNNER_API AMainMenuHUD : public AHUD {
 	protected:
 		virtual void BeginPlay() override;
 
+		UFUNCTION()
+		virtual void SwitchToCharacterSelection();
+
+		UFUNCTION()
+		virtual void SwitchToMainMenu();
+
 	protected:
 		UPROPERTY(EditAnywhere, Category = "Custom|Widgets")
 		TSubclassOf<UUserWidget> MainMenuDetailWidget = nullptr;
 
+
+		UPROPERTY(EditAnywhere, Category = "Custom|Widgets")
+		TSubclassOf<UUserWidget> CharacterSelectionWidget = nullptr;
+
 		UPROPERTY()
 		UUserWidget* MainMenuWidgetInstance = nullptr;
+
+		UPROPERTY()
+		UUserWidget* CharacterSelectionWidgetInstance = nullptr;
 };

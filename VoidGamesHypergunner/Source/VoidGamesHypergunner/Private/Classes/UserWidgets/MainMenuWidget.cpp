@@ -4,15 +4,9 @@
 #include "Kismet/GameplayStatics.h"
 
 void UMainMenuWidget::OnPlayButtonClicked() {
-	if (UGameInstance* GameInstance = GetGameInstance()) {
-		for (int32 i = GameInstance -> GetNumLocalPlayers() - 1; i > 0; --i) {
-			ULocalPlayer* LocalPlayer = GameInstance -> GetLocalPlayerByIndex(i);
-			GameInstance -> RemoveLocalPlayer(LocalPlayer);
-		}
-	}
-
-	UGameplayStatics::OpenLevel(GetWorld(), "MainLevel", true);
+	this -> OnPlayClicked.Broadcast();
 }
+
 void UMainMenuWidget::OnQuitButtonClicked() {
 	if (UGameInstance* GameInstance = GetGameInstance()) {
 		for (int32 i = GameInstance -> GetNumLocalPlayers() - 1; i > 0; --i) {
