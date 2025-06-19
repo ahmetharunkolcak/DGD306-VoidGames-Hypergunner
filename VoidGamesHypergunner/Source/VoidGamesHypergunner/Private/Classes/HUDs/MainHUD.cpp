@@ -2,6 +2,7 @@
 
 #include "Classes/Characters/PlayerCharacter.h"
 #include "Classes/UserWidgets/InGameWidget.h"
+#include "Classes/UserWidgets/PauseWidget.h"
 #include "GameFramework/GameModeBase.h"
 #include "Interfaces/TimerContainable.h"
 #include "Interfaces/VisualContainable.h"
@@ -16,23 +17,22 @@ void AMainHUD::SetInGameCharacterImage(UTexture2D* ImageToSet, const bool bIsFor
 }
 
 void AMainHUD::TriggerReturnScreen(const bool bIsTimeUp) {
-	if (UGameplayStatics::SetGamePaused(GetWorld(), true)) {
-		UInGameWidget* InGameWidget = Cast<UInGameWidget>(this -> InGameWidgetInstance);
-		InGameWidget -> SetIsFocusable(true);
+	UInGameWidget* InGameWidget = Cast<UInGameWidget>(this -> InGameWidgetInstance);
+	InGameWidget -> SetIsFocusable(true);
 
-		if (APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-			PlayerController != nullptr) {
-			FInputModeUIOnly InputMode;
-			InputMode.SetWidgetToFocus(InGameWidget -> TakeWidget());
-			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-			PlayerController -> SetInputMode(InputMode);
-			PlayerController -> bShowMouseCursor = true;
-		}
+	if (APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+		PlayerController != nullptr) {
+		FInputModeUIOnly InputMode;
+		InputMode.SetWidgetToFocus(InGameWidget -> TakeWidget());
+		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		PlayerController -> SetInputMode(InputMode);
+		PlayerController -> bShowMouseCursor = true;
+	}
 
-		InGameWidget -> PlayAnimation(InGameWidget -> GetTriggerButtonScreenAnimation());
-		if (bIsTimeUp) {
-			InGameWidget -> PlayAnimation(InGameWidget -> GetSwitchToFinishScreenAnimation());
-		}
+	InGameWidget -> PlayAnimation(InGameWidget -> GetTriggerButtonScreenAnimation());
+	InGameWidget -> SetTimerForKeyboardFocus(GetWorld(), 0.2f);
+	if (bIsTimeUp) {
+		InGameWidget -> PlayAnimation(InGameWidget -> GetSwitchToFinishScreenAnimation());
 	}
 }
 
@@ -42,7 +42,7 @@ void AMainHUD::UpdateScoreboard(const int32 ScoreToUpdate, const bool bIsPlayer1
 
 void AMainHUD::TogglePauseScreen(const bool bShouldEnable) {
 	if (bShouldEnable) {
-		this -> PauseWidgetInstance -> AddToViewport();
+		this -> PauseWidgetInstance -> AddToViewport(1);
 		this -> PauseWidgetInstance -> SetIsFocusable(true);
 		if (APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 			PlayerController != nullptr) {
@@ -51,6 +51,8 @@ void AMainHUD::TogglePauseScreen(const bool bShouldEnable) {
 			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 			PlayerController -> SetInputMode(InputMode);
 			PlayerController -> bShowMouseCursor = true;
+
+			Cast<UPauseWidget>(this -> PauseWidgetInstance) -> SetTimerForKeyboardFocus(GetWorld(), 0.2f);
 		}
 	} else {
 		this -> PauseWidgetInstance -> RemoveFromParent();

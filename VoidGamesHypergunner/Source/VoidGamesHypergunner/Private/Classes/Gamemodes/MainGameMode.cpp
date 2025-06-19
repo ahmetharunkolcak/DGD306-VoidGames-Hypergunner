@@ -115,6 +115,10 @@ void AMainGameMode::BeginPlay() {
 void AMainGameMode::Tick(const float DeltaSeconds) {
 	Super::Tick(DeltaSeconds);
 
+	if (this -> bIsGamePaused) {
+		return;
+	}
+
 	this -> CurrentTime -= DeltaSeconds;
 	if (this -> CurrentTime <= 0.0f) {
 		this -> CurrentTime = 0.0f;
@@ -133,7 +137,6 @@ void AMainGameMode::UpdateScoreboard() {
 void AMainGameMode::TriggerPause() {
 	this -> bIsGamePaused = !this -> bIsGamePaused;
 	Cast<AMainHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0) -> GetHUD()) -> TogglePauseScreen(this -> bIsGamePaused);
-	UGameplayStatics::SetGamePaused(GetWorld(), this -> bIsGamePaused);
 }
 
 float AMainGameMode::GetGameplayTime(const bool bIsCurrentTime) const {

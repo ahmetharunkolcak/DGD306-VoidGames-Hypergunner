@@ -2,7 +2,6 @@
 
 #include "Blueprint/UserWidget.h"
 #include "Classes/GameInstances/MainGameInstance.h"
-#include "Classes/UserWidgets/CharacterOptionWidget.h"
 #include "Classes/UserWidgets/CharacterSelectionWidget.h"
 #include "Classes/UserWidgets/MainMenuWidget.h"
 #include "Kismet/GameplayStatics.h"
@@ -53,6 +52,8 @@ void AMainMenuHUD::BeginPlay() {
 		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 		PlayerController -> SetInputMode(InputMode);
 		PlayerController -> bShowMouseCursor = true;
+
+		MainMenuWidget -> SetTimerForKeyboardFocus(GetWorld(), 0.2f);
 	}
 
 	this -> CharacterSelectionWidgetInstance = CreateWidget<UUserWidget>(CurrentWorld, this -> CharacterSelectionWidget);
@@ -68,6 +69,8 @@ void AMainMenuHUD::BeginPlay() {
 void AMainMenuHUD::SwitchToCharacterSelection() {
 	this -> MainMenuWidgetInstance -> RemoveFromParent();
 	this -> CharacterSelectionWidgetInstance -> AddToViewport();
+	this -> CharacterSelectionWidgetInstance -> SetIsFocusable(true);
+	Cast<UCharacterSelectionWidget>(this -> CharacterSelectionWidgetInstance) -> SetTimerForKeyboardFocus(GetWorld(), 0.2f);
 }
 
 void AMainMenuHUD::SwitchToMainMenu() {
@@ -77,4 +80,6 @@ void AMainMenuHUD::SwitchToMainMenu() {
 
 	this -> CharacterSelectionWidgetInstance -> RemoveFromParent();
 	this -> MainMenuWidgetInstance -> AddToViewport();
+	this -> MainMenuWidgetInstance -> SetIsFocusable(true);
+	Cast<UMainMenuWidget>(this -> MainMenuWidgetInstance) -> SetTimerForKeyboardFocus(GetWorld(), 0.2f);
 }

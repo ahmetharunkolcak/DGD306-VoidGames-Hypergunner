@@ -20,9 +20,13 @@ class VOIDGAMESHYPERGUNNER_API UPauseWidget : public UUserWidget {
 		UFUNCTION()
 		virtual void OnQuitGameButtonClicked();
 
+		virtual void SetTimerForKeyboardFocus(UWorld* World, const float Delay);
+
 	protected:
 		virtual void NativeConstruct() override;
 		virtual void NativeDestruct() override;
+
+		virtual void SetKeyboardFocusToContinueButton() const;
 
 	protected:
 		UPROPERTY(meta = (BindWidget))

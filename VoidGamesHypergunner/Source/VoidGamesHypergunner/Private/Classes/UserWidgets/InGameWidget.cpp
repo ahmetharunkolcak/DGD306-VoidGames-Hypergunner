@@ -148,6 +148,17 @@ void UInGameWidget::OnReturnToMainMenuClicked() {
 	UGameplayStatics::OpenLevel(GetWorld(), FName("MainMenu"), true);
 }
 
+void UInGameWidget::SetTimerForKeyboardFocus(UWorld* World, const float Delay) {
+	FTimerHandle KeyboardFocusTimerHandle;
+	World -> GetTimerManager().SetTimer(
+		KeyboardFocusTimerHandle,
+		this,
+		&UInGameWidget::SetKeyboardFocusToRematchButton,
+		Delay,
+		false
+	);
+}
+
 void UInGameWidget::NativeConstruct() {
 	Super::NativeConstruct();
 
@@ -345,4 +356,8 @@ void UInGameWidget::NativeDestruct() {
 
 	this -> RematchButton -> OnClicked.RemoveAll(this);
 	this -> ReturnToMainMenuButton -> OnClicked.RemoveAll(this);
+}
+
+void UInGameWidget::SetKeyboardFocusToRematchButton() {
+	this -> RematchButton -> SetKeyboardFocus();
 }

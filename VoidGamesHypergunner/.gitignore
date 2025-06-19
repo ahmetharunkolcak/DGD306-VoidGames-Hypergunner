@@ -3,7 +3,7 @@
 .idea/
 
 # Unreal Engine Files & Folders
-
+Build/
 Binaries/
 DerivedDataCache/
 Intermediate/

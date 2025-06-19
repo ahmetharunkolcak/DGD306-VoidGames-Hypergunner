@@ -19,12 +19,16 @@ class VOIDGAMESHYPERGUNNER_API UMainMenuWidget : public UUserWidget {
 		UFUNCTION()
 		void OnQuitButtonClicked();
 
+		virtual void SetTimerForKeyboardFocus(UWorld* World, const float Delay);
+
 	public:
 		FOnPlayClicked OnPlayClicked;
 
 	protected:
 		virtual void NativeConstruct() override;
 		virtual void NativeDestruct() override;
+
+		virtual void SetKeyboardFocusToPlayButton() const;
 
 		UPROPERTY(meta = (BindWidget))
 		UButton* PlayButton = nullptr;

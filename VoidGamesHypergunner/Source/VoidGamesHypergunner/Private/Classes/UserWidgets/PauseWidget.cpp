@@ -55,3 +55,18 @@ void UPauseWidget::NativeDestruct() {
 	this -> ReturnToMainMenuButton -> OnClicked.RemoveAll(this);
 	this -> QuitGameButton -> OnClicked.RemoveAll(this);
 }
+
+void UPauseWidget::SetTimerForKeyboardFocus(UWorld* World, const float Delay) {
+	FTimerHandle KeyboardFocusTimerHandle;
+	World -> GetTimerManager().SetTimer(
+		KeyboardFocusTimerHandle,
+		this,
+		&UPauseWidget::SetKeyboardFocusToContinueButton,
+		Delay,
+		false
+	);
+}
+
+void UPauseWidget::SetKeyboardFocusToContinueButton() const {
+	this -> ContinueButton -> SetKeyboardFocus();
+}

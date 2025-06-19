@@ -24,11 +24,15 @@ class VOIDGAMESHYPERGUNNER_API UCharacterSelectionWidget : public UUserWidget {
 		UFUNCTION()
 		virtual void OnReturnToMainMenuButtonClicked();
 
+		virtual void SetTimerForKeyboardFocus(UWorld* World, const float Delay);
+
 		FOnBackClicked OnBackClicked;
 
 	protected:
 		virtual void NativeConstruct() override;
 		virtual void NativeDestruct() override;
+
+		virtual void SetKeyboardFocusToResetButton() const;
 
 		UPROPERTY(meta = (BindWidget))
 		UTextBlock* WarningText = nullptr;

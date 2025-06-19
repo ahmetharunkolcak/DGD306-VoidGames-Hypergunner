@@ -56,3 +56,19 @@ void UCharacterSelectionWidget::NativeDestruct() {
 	this -> PlayButton -> OnClicked.RemoveAll(this);
 	this -> ReturnToMainMenuButton -> OnClicked.RemoveAll(this);
 }
+
+void UCharacterSelectionWidget::SetTimerForKeyboardFocus(UWorld* World, const float Delay) {
+	FTimerHandle KeyboardFocusTimerHandle;
+
+	World -> GetTimerManager().SetTimer(
+		KeyboardFocusTimerHandle,
+		this,
+		&UCharacterSelectionWidget::SetKeyboardFocusToResetButton,
+		Delay,
+		false
+	);
+}
+
+void UCharacterSelectionWidget::SetKeyboardFocusToResetButton() const {
+	this -> ResetButton -> SetKeyboardFocus();
+}

@@ -36,6 +36,8 @@ class VOIDGAMESHYPERGUNNER_API UInGameWidget : public UUserWidget, public IVisua
 		UFUNCTION()
 		void OnReturnToMainMenuClicked();
 
+		virtual void SetTimerForKeyboardFocus(UWorld* World, const float Delay);
+
 		FORCEINLINE UWidgetAnimation* GetTriggerButtonScreenAnimation() const { return this -> TriggerButtonScreen; }
 		FORCEINLINE UWidgetAnimation* GetSwitchToFinishScreenAnimation() const { return this -> SwitchToFinishScreen; }
 
@@ -46,6 +48,7 @@ class VOIDGAMESHYPERGUNNER_API UInGameWidget : public UUserWidget, public IVisua
 		virtual FText GetFormattedTime(float Time) const;
 		virtual void  NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 		virtual void  NativeDestruct() override;
+		virtual void SetKeyboardFocusToRematchButton();
 
 		UPROPERTY(meta = (BindWidget))
 		UProgressBar* HealthBarL = nullptr;

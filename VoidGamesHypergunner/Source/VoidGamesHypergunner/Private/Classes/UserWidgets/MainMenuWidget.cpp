@@ -50,3 +50,18 @@ void UMainMenuWidget::NativeDestruct() {
 	this -> PlayButton -> OnClicked.RemoveAll(this);
 	this -> QuitButton -> OnClicked.RemoveAll(this);
 }
+
+void UMainMenuWidget::SetTimerForKeyboardFocus(UWorld* World, const float Delay) {
+	FTimerHandle KeyboardFocusTimerHandle;
+	World -> GetTimerManager().SetTimer(
+		KeyboardFocusTimerHandle,
+		this,
+		&UMainMenuWidget::SetKeyboardFocusToPlayButton,
+		Delay,
+		false
+	);
+}
+
+void UMainMenuWidget::SetKeyboardFocusToPlayButton() const {
+	this -> PlayButton -> SetKeyboardFocus();
+}
